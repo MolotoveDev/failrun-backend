@@ -40,9 +40,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $register_date = null;
 
-    #[ORM\Column]
-    private ?int $role = null;
-
     /**
      * @var Collection<int, Clips>
      */
@@ -85,7 +82,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string) $this->username;
     }
 
     /**
@@ -162,18 +159,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRegisterDate(\DateTime $register_date): static
     {
         $this->register_date = $register_date;
-
-        return $this;
-    }
-
-    public function getRole(): ?int
-    {
-        return $this->role;
-    }
-
-    public function setRole(int $role): static
-    {
-        $this->role = $role;
 
         return $this;
     }
