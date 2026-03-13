@@ -21,4 +21,5 @@ security:
     access_control:
         - { path: ^/failrun/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/failrun/api/test, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api, roles: IS_AUTHENTICATED_FULLY }
