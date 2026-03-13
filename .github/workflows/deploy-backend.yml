@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Checkout codi
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Enviar codi al servidor via rsync
         uses: burnett01/rsync-deployments@6.0.0
