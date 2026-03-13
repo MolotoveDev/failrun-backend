@@ -47,7 +47,7 @@ final class FailrunApiController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        return new JSONResponse(['status'=>'success', 'message'=>'User registered successfully'], 201);
+        return new JsonResponse(['status'=>'success', 'message'=>'User registered successfully'], 201);
     }
 
     #[Route('/failrun/api/login', name: 'app_failrun_api_login', methods: ['POST'])]
@@ -69,24 +69,19 @@ final class FailrunApiController extends AbstractController
         ], 200);
     }
 
-    #[Route('/failrun/api/get-user-info/{id}', name: 'app_failrun_api_get_user_info', methods: ['GET'])]
-    public function getUserInfo($id, EntityManagerInterface $em): JsonResponse
+    #[Route('/failrun/api/get-user-info', name: 'app_failrun_api_get_user_info', methods: ['GET'])]
+    public function getUserInfo(Security $security): JsonResponse
     {
-        $user = $em->getRepository(User::class)->find($id);
-        if (!$user) {
-            return new JSONResponse(['status'=>'error', 'message'=>'User not found'], 404);
-        } elseif ($user->getId() !== $id) {
-            return new JSONResponse(['status'=>'error', 'message'=>'Unauthorized'], 401);
-        } else {
-            return new JSONResponse([
-                'status'=>'success', 
-                'data' => [
-                    'id' => $user->getId(),
-                    'username' => $user->getUsername(),
-                    'email' => $user->getEmail(),
-                    'register_date' => $user->getRegisterDate()->format('Y-m-d H:i:s'),
-                ]
-            ], 200);
-        }
+        $user = $security->getUser();
+
+        return new JsonResponse([
+            'status' => 'success',
+            'data' => [
+                'id' => $user->getId(),
+                'username' => $user->getUsername(),
+                'email' => $user->getEmail(),
+                'register_date' => $user->getRegisterDate()->format('Y-m-d H:i:s'),
+            ]
+        ], 200);
     }
 }
