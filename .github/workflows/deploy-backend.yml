@@ -21,21 +21,19 @@ jobs:
             --exclude '.env.local'
             --exclude 'var/'
             --exclude 'vendor/'
-            --exclude 'config/secrets/prod/prod.decrypt.private.php'
           path: ./
           remote_path: /var/www/backend
-          remote_host: ${{ secrets.TARGET_HOST }}
-          remote_user: ${{ secrets.TARGET_USER }}
-          remote_key: ${{ secrets.TARGET_KEY }}
+          remote_host: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_HOST || secrets.DEV_TARGET_HOST }}
+          remote_user: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_USER || secrets.DEV_TARGET_USER }}
+          remote_key: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_KEY || secrets.DEV_TARGET_KEY }}
 
       - name: Instal·lar dependències i netejar cache
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.TARGET_HOST }}
-          username: ${{ secrets.TARGET_USER }}
-          key: ${{ secrets.TARGET_KEY }}
+          host: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_HOST || secrets.DEV_TARGET_HOST }}
+          username: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_USER || secrets.DEV_TARGET_USER }}
+          key: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_KEY || secrets.DEV_TARGET_KEY }}
           script: |
             cd /var/www/backend
             composer install --no-dev --optimize-autoloader
             php bin/console cache:clear --env=prod
-            php bin/console doctrine:migrations:migrate --no-interaction --env=prod
