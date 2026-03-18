@@ -52,6 +52,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: UserRequest::class, mappedBy: 'user_id')]
     private Collection $userRequests;
 
+    #[ORM\Column(length: 2555, nullable: true)]
+    private ?string $profilePic = null;
+
     public function __construct()
     {
         $this->clips = new ArrayCollection();
@@ -219,6 +222,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $userRequest->setUserId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getProfilePic(): ?string
+    {
+        return $this->profilePic;
+    }
+
+    public function setProfilePic(?string $profilePic): static
+    {
+        $this->profilePic = $profilePic;
 
         return $this;
     }
