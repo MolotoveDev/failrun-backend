@@ -81,6 +81,7 @@ final class FailrunApiController extends AbstractController
                 'username' => $user->getUsername(),
                 'email' => $user->getEmail(),
                 'register_date' => $user->getRegisterDate()->format('Y-m-d H:i:s'),
+                'profilePic' => $user->getProfilePic(),
             ]
         ], 200);
     }
