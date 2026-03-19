@@ -21,6 +21,7 @@ jobs:
             --exclude '.env.local'
             --exclude 'var/'
             --exclude 'vendor/'
+            --exclude 'config/jwt/'
           path: ./
           remote_path: /var/www/backend
           remote_host: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_HOST || secrets.DEV_TARGET_HOST }}
