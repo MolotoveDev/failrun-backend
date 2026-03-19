@@ -37,6 +37,4 @@ jobs:
           script: |
             cd /var/www/backend
             composer install --no-dev --optimize-autoloader
-            chmod -R 775 var/
             php bin/console cache:clear --env=prod
-            chmod -R 775 var/
