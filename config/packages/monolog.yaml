@@ -34,7 +34,7 @@ when@prod:
         handlers:
             main:
                 type: stream
-                path: /var/log/symfony/prod.log
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
                 channels: ["!deprecation"]
             console:
@@ -44,4 +44,4 @@ when@prod:
             deprecation:
                 type: stream
                 channels: [deprecation]
-                path: /var/log/symfony/deprecation.log
+                path: "%kernel.logs_dir%/deprecation.log"
