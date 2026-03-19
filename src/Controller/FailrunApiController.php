@@ -27,14 +27,15 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/test', name: 'app_failrun_api_test')]
     public function test(): Response
     {
-        return $this->json(['message' => 'Hello, World!']);
+        return $this->json(['message' => 'Hello, World!']); //Simple test endpoint to verify API is working. Can also be used as a health check.
     }
 
     #[Route('/failrun/api/register', name: 'app_failrun_api_register')]
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $user = new User(); //Create user entity and set data
+        //Create user entity and set data from request. We also set the registration date and default role for the user.
+        $user = new User(); 
         $user->setUsername($data['username']);
         $user->setEmail($data['email']);
         $user->setRegisterDate(new \DateTime());
@@ -44,6 +45,7 @@ final class FailrunApiController extends AbstractController
         $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
         $user->setPassword($hashedPassword);
 
+        //Persist user to database. Security checks must be done in frontend.
         $em->persist($user);
         $em->flush();
 
@@ -53,14 +55,17 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/login', name: 'app_failrun_api_login', methods: ['POST'])]
     public function login(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em, JWTTokenManagerInterface $jwtManager): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        //Get login data through JSON, decode it and get user from email.
+        $data = json_decode($request->getContent(), true); 
 
         $user = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
 
+        //Security check: if user doesn't exist or password is invalid, return error response.
         if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
             return new JsonResponse(['status' => 'error', 'message' => 'Invalid credentials'], 401);
         }
 
+        //If everything checks, create JWT token for the user and return it in the response.
         $token = $jwtManager->create($user);
 
         return new JsonResponse([
@@ -72,7 +77,7 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/get-user-info', name: 'app_failrun_api_get_user_info', methods: ['GET'])]
     public function getUserInfo(Security $security): JsonResponse
     {
-        $user = $security->getUser();
+        $user = $security->getUser(); //Fetch user info from token
 
         return new JsonResponse([
             'status' => 'success',
