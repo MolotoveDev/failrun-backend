@@ -40,6 +40,7 @@ final class FailrunApiController extends AbstractController
         $user->setEmail($data['email']);
         $user->setRegisterDate(new \DateTime());
         $user->setRoles(['ROLE_USER']);
+        $user->setProfilePic($data['profilePic'] ?? null); //Set profile picture if provided
 
         //Hash password
         $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
