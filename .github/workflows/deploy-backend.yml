@@ -2,7 +2,7 @@ name: Deploy Backend Symfony
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   deploy:
@@ -38,3 +38,4 @@ jobs:
             cd /var/www/backend
             composer install --no-dev --optimize-autoloader
             php bin/console cache:clear --env=prod
+            sudo systemctl restart apache2
