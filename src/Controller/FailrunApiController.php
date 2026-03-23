@@ -27,7 +27,7 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/test', name: 'app_failrun_api_test')]
     public function test(): Response
     {
-        return $this->json(['message' => 'Hello, World!']); //Simple test endpoint to verify API is working. Can also be used as a health check.
+        return $this->json(['message' => 'Hello, World!!!!!']); //Simple test endpoint to verify API is working. Can also be used as a health check.
     }
 
     #[Route('/failrun/api/register', name: 'app_failrun_api_register')]
