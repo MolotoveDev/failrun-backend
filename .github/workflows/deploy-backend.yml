@@ -22,6 +22,7 @@ jobs:
             --exclude 'var/'
             --exclude 'vendor/'
             --exclude 'config/jwt/'
+            --exclude 'config/secrets/prod/prod.decrypt.private.php'
           path: ./
           remote_path: /var/www/backend
           remote_host: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_HOST || secrets.DEV_TARGET_HOST }}
