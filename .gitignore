@@ -24,5 +24,10 @@
 .env.test
 
 ###> lexik/jwt-authentication-bundle ###
-/config/jwt/*.pem
+/config/jwt/private.pem
 ###< lexik/jwt-authentication-bundle ###
+
+# Secrets:
+config/secrets/prod/prod.decrypt.private.php
+config/secrets/dev/dev.decrypt.private.php
+config/jwt/private.pem
