@@ -21,7 +21,7 @@ jobs:
             --exclude '.env.local'
             --exclude 'var/'
             --exclude 'vendor/'
-            --exclude 'config/jwt/'
+            --exclude 'config/jwt/private.pem'
             --exclude 'config/secrets/prod/prod.decrypt.private.php'
           path: ./
           remote_path: /var/www/backend
