@@ -12,6 +12,16 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        admin:
+            pattern: ^/failrun/admin
+            provider: app_user_provider
+            form_login:
+                login_path: app_failrun_admin_login
+                check_path: app_failrun_admin_login
+                default_target_path: app_failrun_admin_panel
+            logout:
+                path: app_failrun_admin_logout
+                target: app_failrun_admin_login
         main:
             lazy: true
             provider: app_user_provider
@@ -19,6 +29,8 @@ security:
             jwt: ~
 
     access_control:
+        - { path: ^/failrun/admin/login, roles: PUBLIC_ACCESS }
+        - { path: ^/failrun/admin, roles: ROLE_ADMIN }
         - { path: ^/failrun/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/test, roles: PUBLIC_ACCESS }
