@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Failrun - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            background-color: #333335;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255,45,85,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,45,85,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .login-header {
+            text-align: center;
+        }
+
+        .login-header h1 {
+            color: white;
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        .login-header h1 span {
+            color: #FF2D55;
+        }
+
+        .login-header p {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        .login-box {
+            background-color: #41414A;
+            border-radius: 20px;
+            padding: 3rem;
+            width: 420px;
+            box-shadow: 20px 20px 60px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .error-msg {
+            background-color: rgba(255,45,85,0.15);
+            border: 1px solid #FF2D55;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: #FF2D55;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .form-group input {
+            background-color: #2a2a30;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 0.9rem 1.2rem;
+            color: white;
+            font-family: "Montserrat", sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #FF2D55;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.2);
+            font-weight: 400;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background-color: #FF2D55;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: "Montserrat", sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .btn-login:hover {
+            background-color: #CF2949;
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        .login-footer {
+            color: rgba(255,255,255,0.2);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <div class="login-wrapper">
+        <div class="login-header">
+            <h1>FAIL<span>RUN</span></h1>
+            <p>Admin Panel</p>
+        </div>
+
+        <div class="login-box">
+            {% if error %}
+                <div class="error-msg">
+                    ⚠ {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <form method="post">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="_username" value="{{ last_username }}" placeholder="admin@failrun.com" autocomplete="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="_password" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button type="submit" class="btn-login">Entrar</button>
+            </form>
+        </div>
+
+        <p class="login-footer">FAILRUN.COM © 2025 — ACCESO RESTRINGIDO</p>
+    </div>
+</body>
+</html>
