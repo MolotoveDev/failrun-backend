@@ -9,21 +9,21 @@ security:
                 property: username
 
     firewalls:
-    admin:
-        pattern: ^/failrun/admin
-        provider: app_user_provider
-        form_login:
-            login_path: app_failrun_admin_login
-            check_path: app_failrun_admin_login
-            default_target_path: app_failrun_admin_panel
-        logout:
-            path: app_failrun_admin_logout
-            target: app_failrun_admin_login
-    main:
-        lazy: true
-        provider: app_user_provider
-        stateless: true
-        jwt: ~
+        admin:
+            pattern: ^/failrun/admin
+            provider: app_user_provider
+            form_login:
+                login_path: app_failrun_admin_login
+                check_path: app_failrun_admin_login
+                default_target_path: app_failrun_admin_panel
+            logout:
+                path: app_failrun_admin_logout
+                target: app_failrun_admin_login
+        main:
+            lazy: true
+            provider: app_user_provider
+            stateless: true
+            jwt: ~
 
     access_control:
         - { path: ^/failrun/admin/login, roles: PUBLIC_ACCESS }
