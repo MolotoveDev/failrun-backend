@@ -1,0 +1,42 @@
+name: Deploy Backend Symfony
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout codi
+        uses: actions/checkout@v4
+
+      - name: Enviar codi al servidor via rsync
+        uses: burnett01/rsync-deployments@6.0.0
+        with:
+          switches: -avz --delete
+            --exclude '.git'
+            --exclude '.env'
+            --exclude '.env.local'
+            --exclude 'var/'
+            --exclude 'vendor/'
+            --exclude 'config/jwt/private.pem'
+            --exclude 'config/secrets/prod/prod.decrypt.private.php'
+          path: ./
+          remote_path: /var/www/backend
+          remote_host: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_HOST || secrets.DEV_TARGET_HOST }}
+          remote_user: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_USER || secrets.DEV_TARGET_USER }}
+          remote_key: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_KEY || secrets.DEV_TARGET_KEY }}
+
+      - name: Instal·lar dependències i netejar cache
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_HOST || secrets.DEV_TARGET_HOST }}
+          username: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_USER || secrets.DEV_TARGET_USER }}
+          key: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_KEY || secrets.DEV_TARGET_KEY }}
+          script: |
+            cd /var/www/backend
+            composer install --no-dev --optimize-autoloader
+            php bin/console cache:clear --env=prod
+            sudo systemctl restart apache2
