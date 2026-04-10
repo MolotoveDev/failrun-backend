@@ -214,6 +214,7 @@
         }
 
         .badge-admin { background: rgba(255,45,85,0.2); color: var(--red); }
+        .badge-moderator { background: rgba(175,82,222,0.2); color: #AF52DE; }
         .badge-user { background: rgba(255,255,255,0.08); color: var(--text-muted); }
         .badge-pending { background: rgba(255,204,0,0.15); color: #FFCC00; }
         .badge-accepted { background: rgba(52,199,89,0.15); color: #34C759; }
@@ -414,6 +415,12 @@
             min-height: 80px;
         }
 
+        .form-help {
+            margin-top: 0.35rem;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+        }
+
         .modal-footer {
             display: flex;
             gap: 0.8rem;
@@ -512,6 +519,8 @@
                             <td>
                                 {% if 'ROLE_ADMIN' in user.roles %}
                                     <span class="badge badge-admin">ADMIN</span>
+                                {% elseif 'ROLE_MODERATOR' in user.roles %}
+                                    <span class="badge badge-moderator">MODERATOR</span>
                                 {% else %}
                                     <span class="badge badge-user">USER</span>
                                 {% endif %}
@@ -873,8 +882,21 @@
                     <input type="email" name="email" id="user-email" required>
                 </div>
                 <div class="form-group">
+                    <label>Rol</label>
+                    <select name="role" id="user-role" required>
+                        <option value="ROLE_USER">Usuario (ROLE_USER)</option>
+                        <option value="ROLE_MODERATOR">Moderador (ROLE_MODERATOR)</option>
+                        <option value="ROLE_ADMIN">Admin (ROLE_ADMIN)</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Foto Perfil URL</label>
                     <input type="text" name="profilePic" id="user-profilePic">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="plainPassword" id="user-plainPassword" autocomplete="new-password">
+                    <span class="form-help">En edición, déjala vacía para conservar la actual.</span>
                 </div>
             </form>
         </div>
@@ -1198,7 +1220,20 @@
                 // Llena los campos del formulario
                 for (let key in data) {
                     const field = form.elements[key];
-                    if (field) field.value = data[key] || '';
+                    if (!field) continue;
+
+                    if (key === 'roles' && form.elements['role']) {
+                        if (Array.isArray(data.roles) && data.roles.includes('ROLE_ADMIN')) {
+                            form.elements['role'].value = 'ROLE_ADMIN';
+                        } else if (Array.isArray(data.roles) && data.roles.includes('ROLE_MODERATOR')) {
+                            form.elements['role'].value = 'ROLE_MODERATOR';
+                        } else {
+                            form.elements['role'].value = 'ROLE_USER';
+                        }
+                        continue;
+                    }
+
+                    field.value = data[key] ?? '';
                 }
 
                 openModal(modalId, 'edit');
