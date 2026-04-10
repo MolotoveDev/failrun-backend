@@ -228,6 +228,232 @@
         }
 
         .table-scroll { overflow-x: auto; }
+
+        /* BOTONES DE ACCIÓN */
+        .btn {
+            padding: 0.35rem 0.8rem;
+            border: none;
+            border-radius: 6px;
+            font-family: "Montserrat", sans-serif;
+            font-weight: 700;
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+
+        .btn-edit {
+            background: rgba(52,199,89,0.15);
+            color: #34C759;
+            border: 1px solid rgba(52,199,89,0.3);
+        }
+
+        .btn-edit:hover {
+            background: rgba(52,199,89,0.25);
+            border-color: #34C759;
+        }
+
+        .btn-delete {
+            background: rgba(255,45,85,0.15);
+            color: var(--red);
+            border: 1px solid rgba(255,45,85,0.3);
+        }
+
+        .btn-delete:hover {
+            background: rgba(255,45,85,0.25);
+            border-color: var(--red);
+        }
+
+        .btn-add {
+            background: var(--red);
+            color: white;
+            border: 1px solid var(--red);
+            margin-bottom: 1rem;
+        }
+
+        .btn-add:hover {
+            background: var(--red-dark);
+            border-color: var(--red-dark);
+        }
+
+        .btn-primary {
+            background: var(--red);
+            color: white;
+            border: 1px solid var(--red);
+        }
+
+        .btn-primary:hover {
+            background: var(--red-dark);
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeInModal 0.2s;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: slideInModal 0.2s;
+        }
+
+        @keyframes slideInModal {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            color: var(--text);
+            font-family: "Montserrat", sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--red);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: flex-end;
+        }
+
+        /* TOAST DE NOTIFICACIÓN */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            animation: slideInToast 0.3s;
+            z-index: 2000;
+        }
+
+        @keyframes slideInToast {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success {
+            background: rgba(52,199,89,0.2);
+            color: #34C759;
+            border: 1px solid rgba(52,199,89,0.3);
+        }
+
+        .toast.error {
+            background: rgba(255,45,85,0.2);
+            color: var(--red);
+            border: 1px solid rgba(255,45,85,0.3);
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -251,6 +477,7 @@
     {# USERS #}
     <div class="tab-panel active" id="tab-users">
         <div class="table-wrapper">
+            <button class="btn btn-add" onclick="openModal('modal-user-form', 'new')">+ Añadir Usuario</button>
             <div class="table-toolbar">
                 <input class="search-input" type="text" placeholder="Buscar..." oninput="filterTable('users-table', this.value, document.getElementById('users-col').value)">
                 <select class="filter-select" id="users-col">
@@ -273,6 +500,7 @@
                             <th onclick="sortTable('users-table',3)">Rol</th>
                             <th onclick="sortTable('users-table',4)">Registro</th>
                             <th onclick="sortTable('users-table',5)">Foto perfil</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -290,9 +518,15 @@
                             </td>
                             <td>{{ user.registerDate ? user.registerDate|date('d/m/Y') : '—' }}</td>
                             <td>{{ user.profilePic ?? '—' }}</td>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="editEntity('users', {{ user.id }}, 'modal-user-form')">Editar</button>
+                                    <button class="btn btn-delete" onclick="deleteEntity('users', {{ user.id }}, 'users-table')">Eliminar</button>
+                                </div>
+                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="6" class="no-results">Sin resultados</td></tr>
+                        <tr><td colspan="7" class="no-results">Sin resultados</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -303,6 +537,7 @@
     {# CLIPS #}
     <div class="tab-panel" id="tab-clips">
         <div class="table-wrapper">
+            <button class="btn btn-add" onclick="openModal('modal-clip-form', 'new')">+ Añadir Clip</button>
             <div class="table-toolbar">
                 <input class="search-input" type="text" placeholder="Buscar..." oninput="filterTable('clips-table', this.value, document.getElementById('clips-col').value)">
                 <select class="filter-select" id="clips-col">
@@ -324,6 +559,7 @@
                             <th onclick="sortTable('clips-table',4)">Estado</th>
                             <th onclick="sortTable('clips-table',5)">Usuario</th>
                             <th onclick="sortTable('clips-table',6)">Juego</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -344,9 +580,15 @@
                             </td>
                             <td>{{ clip.userId ? clip.userId.username : '—' }}</td>
                             <td>{{ clip.gameId ? clip.gameId.gameName : '—' }}</td>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="editEntity('clips', {{ clip.id }}, 'modal-clip-form')">Editar</button>
+                                    <button class="btn btn-delete" onclick="deleteEntity('clips', {{ clip.id }}, 'clips-table')">Eliminar</button>
+                                </div>
+                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="7" class="no-results">Sin resultados</td></tr>
+                        <tr><td colspan="8" class="no-results">Sin resultados</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -357,6 +599,7 @@
     {# GAMES #}
     <div class="tab-panel" id="tab-games">
         <div class="table-wrapper">
+            <button class="btn btn-add" onclick="openModal('modal-game-form', 'new')">+ Añadir Juego</button>
             <div class="table-toolbar">
                 <input class="search-input" type="text" placeholder="Buscar..." oninput="filterTable('games-table', this.value, document.getElementById('games-col').value)">
                 <select class="filter-select" id="games-col">
@@ -374,6 +617,7 @@
                             <th onclick="sortTable('games-table',1)">Nombre</th>
                             <th onclick="sortTable('games-table',2)">Descripción</th>
                             <th onclick="sortTable('games-table',3)">Cover</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -383,9 +627,15 @@
                             <td>{{ game.gameName }}</td>
                             <td>{{ game.gameDescription ?? '—' }}</td>
                             <td>{{ game.coverImg ?? '—' }}</td>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="editEntity('games', {{ game.id }}, 'modal-game-form')">Editar</button>
+                                    <button class="btn btn-delete" onclick="deleteEntity('games', {{ game.id }}, 'games-table')">Eliminar</button>
+                                </div>
+                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="4" class="no-results">Sin resultados</td></tr>
+                        <tr><td colspan="5" class="no-results">Sin resultados</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -396,6 +646,7 @@
     {# MARKS #}
     <div class="tab-panel" id="tab-marks">
         <div class="table-wrapper">
+            <button class="btn btn-add" onclick="openModal('modal-mark-form', 'new')">+ Añadir Marca</button>
             <div class="table-toolbar">
                 <input class="search-input" type="text" placeholder="Buscar..." oninput="filterTable('marks-table', this.value, document.getElementById('marks-col').value)">
                 <select class="filter-select" id="marks-col">
@@ -414,6 +665,7 @@
                             <th onclick="sortTable('marks-table',2)">Fecha</th>
                             <th onclick="sortTable('marks-table',3)">Clip</th>
                             <th onclick="sortTable('marks-table',4)">Tipo</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -424,9 +676,15 @@
                             <td>{{ mark.markDate ? mark.markDate|date('d/m/Y') : '—' }}</td>
                             <td>{{ mark.clipId ? mark.clipId.clipTitle : '—' }}</td>
                             <td>{{ mark.idMarkType ? mark.idMarkType.markName : '—' }}</td>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="editEntity('marks', {{ mark.id }}, 'modal-mark-form')">Editar</button>
+                                    <button class="btn btn-delete" onclick="deleteEntity('marks', {{ mark.id }}, 'marks-table')">Eliminar</button>
+                                </div>
+                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="5" class="no-results">Sin resultados</td></tr>
+                        <tr><td colspan="6" class="no-results">Sin resultados</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -437,6 +695,7 @@
     {# MARK TYPES #}
     <div class="tab-panel" id="tab-mark_types">
         <div class="table-wrapper">
+            <button class="btn btn-add" onclick="openModal('modal-mark-type-form', 'new')">+ Añadir Tipo Marca</button>
             <div class="table-toolbar">
                 <input class="search-input" type="text" placeholder="Buscar..." oninput="filterTable('mark-types-table', this.value, document.getElementById('mark-types-col').value)">
                 <select class="filter-select" id="mark-types-col">
@@ -454,6 +713,7 @@
                             <th onclick="sortTable('mark-types-table',1)">Nombre</th>
                             <th onclick="sortTable('mark-types-table',2)">Descripción</th>
                             <th onclick="sortTable('mark-types-table',3)">Logo URL</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -463,9 +723,15 @@
                             <td>{{ mt.markName }}</td>
                             <td>{{ mt.markDescription ?? '—' }}</td>
                             <td>{{ mt.markLogoUrl ?? '—' }}</td>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="editEntity('mark_types', {{ mt.id }}, 'modal-mark-type-form')">Editar</button>
+                                    <button class="btn btn-delete" onclick="deleteEntity('mark_types', {{ mt.id }}, 'mark-types-table')">Eliminar</button>
+                                </div>
+                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="4" class="no-results">Sin resultados</td></tr>
+                        <tr><td colspan="5" class="no-results">Sin resultados</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -476,6 +742,7 @@
     {# USER RATES #}
     <div class="tab-panel" id="tab-user_rates">
         <div class="table-wrapper">
+            <button class="btn btn-add" onclick="openModal('modal-user-rate-form', 'new')">+ Añadir Valoración</button>
             <div class="table-toolbar">
                 <input class="search-input" type="text" placeholder="Buscar..." oninput="filterTable('user-rates-table', this.value, document.getElementById('user-rates-col').value)">
                 <select class="filter-select" id="user-rates-col">
@@ -495,6 +762,7 @@
                             <th onclick="sortTable('user-rates-table',3)">Fecha</th>
                             <th onclick="sortTable('user-rates-table',4)">Usuario</th>
                             <th onclick="sortTable('user-rates-table',5)">Clip</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -506,9 +774,15 @@
                             <td>{{ rate.rateDate ? rate.rateDate|date('d/m/Y') : '—' }}</td>
                             <td>{{ rate.userId ? rate.userId.username : '—' }}</td>
                             <td>{{ rate.clipId ? rate.clipId.clipTitle : '—' }}</td>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="editEntity('user_rates', {{ rate.id }}, 'modal-user-rate-form')">Editar</button>
+                                    <button class="btn btn-delete" onclick="deleteEntity('user_rates', {{ rate.id }}, 'user-rates-table')">Eliminar</button>
+                                </div>
+                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="6" class="no-results">Sin resultados</td></tr>
+                        <tr><td colspan="7" class="no-results">Sin resultados</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -519,6 +793,7 @@
     {# USER REQUESTS #}
     <div class="tab-panel" id="tab-user_requests">
         <div class="table-wrapper">
+            <button class="btn btn-add" onclick="openModal('modal-user-request-form', 'new')">+ Añadir Solicitud</button>
             <div class="table-toolbar">
                 <input class="search-input" type="text" placeholder="Buscar..." oninput="filterTable('user-requests-table', this.value, document.getElementById('user-requests-col').value)">
                 <select class="filter-select" id="user-requests-col">
@@ -539,6 +814,7 @@
                             <th onclick="sortTable('user-requests-table',3)">Fecha</th>
                             <th onclick="sortTable('user-requests-table',4)">Estado</th>
                             <th onclick="sortTable('user-requests-table',5)">Usuario</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -558,9 +834,15 @@
                                 {% endif %}
                             </td>
                             <td>{{ req.userId ? req.userId.username : '—' }}</td>
+                            <td>
+                                <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="editEntity('user_requests', {{ req.id }}, 'modal-user-request-form')">Editar</button>
+                                    <button class="btn btn-delete" onclick="deleteEntity('user_requests', {{ req.id }}, 'user-requests-table')">Eliminar</button>
+                                </div>
+                            </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="6" class="no-results">Sin resultados</td></tr>
+                        <tr><td colspan="7" class="no-results">Sin resultados</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -570,14 +852,234 @@
 
 </main>
 
+<!-- MODALES CRUD -->
+
+<!-- MODAL USUARIOS -->
+<div class="modal" id="modal-user-form">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-user-title">Nuevo Usuario</h2>
+            <button class="modal-close" onclick="closeModal('modal-user-form')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="form-user" onsubmit="submitForm(event, 'users', 'users-table')">
+                <input type="hidden" name="id" id="user-id">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" id="user-username" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" id="user-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Foto Perfil URL</label>
+                    <input type="text" name="profilePic" id="user-profilePic">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-user-form')">Cancelar</button>
+            <button class="btn btn-primary" onclick="document.getElementById('form-user').submit()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CLIPS -->
+<div class="modal" id="modal-clip-form">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-clip-title">Nuevo Clip</h2>
+            <button class="modal-close" onclick="closeModal('modal-clip-form')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="form-clip" onsubmit="submitForm(event, 'clips', 'clips-table')">
+                <input type="hidden" name="id" id="clip-id">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" name="clipTitle" id="clip-clipTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="clipDescription" id="clip-clipDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Estado (0=Pendiente, 1=Aceptado, 2=Rechazado)</label>
+                    <input type="number" name="clipStatus" id="clip-clipStatus" min="0" max="2">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-clip-form')">Cancelar</button>
+            <button class="btn btn-primary" onclick="document.getElementById('form-clip').submit()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL JUEGOS -->
+<div class="modal" id="modal-game-form">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-game-title">Nuevo Juego</h2>
+            <button class="modal-close" onclick="closeModal('modal-game-form')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="form-game" onsubmit="submitForm(event, 'games', 'games-table')">
+                <input type="hidden" name="id" id="game-id">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" name="gameName" id="game-gameName" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="gameDescription" id="game-gameDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Cover URL</label>
+                    <input type="text" name="coverImg" id="game-coverImg">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-game-form')">Cancelar</button>
+            <button class="btn btn-primary" onclick="document.getElementById('form-game').submit()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MARCAS -->
+<div class="modal" id="modal-mark-form">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-mark-title">Nueva Marca</h2>
+            <button class="modal-close" onclick="closeModal('modal-mark-form')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="form-mark" onsubmit="submitForm(event, 'marks', 'marks-table')">
+                <input type="hidden" name="id" id="mark-id">
+                <div class="form-group">
+                    <label>Valoración</label>
+                    <input type="number" name="markRate" id="mark-markRate" required>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-mark-form')">Cancelar</button>
+            <button class="btn btn-primary" onclick="document.getElementById('form-mark').submit()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL TIPOS DE MARCA -->
+<div class="modal" id="modal-mark-type-form">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-mark-type-title">Nuevo Tipo de Marca</h2>
+            <button class="modal-close" onclick="closeModal('modal-mark-type-form')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="form-mark-type" onsubmit="submitForm(event, 'mark_types', 'mark-types-table')">
+                <input type="hidden" name="id" id="mark-type-id">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" name="markName" id="mark-type-markName" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="markDescription" id="mark-type-markDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Logo URL</label>
+                    <input type="text" name="markLogoUrl" id="mark-type-markLogoUrl">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-mark-type-form')">Cancelar</button>
+            <button class="btn btn-primary" onclick="document.getElementById('form-mark-type').submit()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VALORACIONES -->
+<div class="modal" id="modal-user-rate-form">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-user-rate-title">Nueva Valoración</h2>
+            <button class="modal-close" onclick="closeModal('modal-user-rate-form')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="form-user-rate" onsubmit="submitForm(event, 'user_rates', 'user-rates-table')">
+                <input type="hidden" name="id" id="user-rate-id">
+                <div class="form-group">
+                    <label>Valoración</label>
+                    <input type="number" name="rate" id="user-rate-rate" required>
+                </div>
+                <div class="form-group">
+                    <label>Comentario</label>
+                    <textarea name="userComment" id="user-rate-userComment"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-user-rate-form')">Cancelar</button>
+            <button class="btn btn-primary" onclick="document.getElementById('form-user-rate').submit()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SOLICITUDES -->
+<div class="modal" id="modal-user-request-form">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-user-request-title">Nueva Solicitud</h2>
+            <button class="modal-close" onclick="closeModal('modal-user-request-form')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="form-user-request" onsubmit="submitForm(event, 'user_requests', 'user-requests-table')">
+                <input type="hidden" name="id" id="user-request-id">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" name="titleRequest" id="user-request-titleRequest" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="descriptionRequest" id="user-request-descriptionRequest" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Estado (0=Pendiente, 1=Aceptado, 2=Rechazado)</label>
+                    <input type="number" name="statusRequest" id="user-request-statusRequest" min="0" max="2">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-user-request-form')">Cancelar</button>
+            <button class="btn btn-primary" onclick="document.getElementById('form-user-request').submit()">Guardar</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    /**
+     * Cambia entre pestañas del panel
+     * @param {string} name - Nombre de la pestaña (users, clips, games, etc.)
+     */
     function switchTab(name) {
+        // Oculta todas las pestañas
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        // Muestra la pestaña seleccionada y marca el botón como activo
         document.getElementById('tab-' + name).classList.add('active');
         event.target.classList.add('active');
     }
 
+    /**
+     * Filtra las filas de una tabla según el valor de búsqueda
+     * @param {string} tableId - ID de la tabla
+     * @param {string} query - Texto a buscar
+     * @param {string} colIndex - Índice de columna (vacío para todas)
+     */
     function filterTable(tableId, query, colIndex) {
         const table = document.getElementById(tableId);
         const rows = table.querySelectorAll('tbody tr');
@@ -598,11 +1100,17 @@
             if (match) visible++;
         });
 
+        // Actualiza el contador de registros
         const countId = tableId.replace('-table', '').replace('-', '_') + '-count';
         const countEl = document.getElementById(countId);
         if (countEl) countEl.textContent = visible + ' registros';
     }
 
+    /**
+     * Ordena una tabla por una columna específica
+     * @param {string} tableId - ID de la tabla
+     * @param {number} colIndex - Índice de columna
+     */
     function sortTable(tableId, colIndex) {
         const table = document.getElementById(tableId);
         const tbody = table.querySelector('tbody');
@@ -610,9 +1118,11 @@
         const th = table.querySelectorAll('thead th')[colIndex];
         const asc = !th.classList.contains('sort-asc');
 
+        // Limpia indicadores de orden previos
         table.querySelectorAll('thead th').forEach(t => t.classList.remove('sort-asc', 'sort-desc'));
         th.classList.add(asc ? 'sort-asc' : 'sort-desc');
 
+        // Ordena las filas
         rows.sort((a, b) => {
             const aText = a.querySelectorAll('td')[colIndex]?.textContent.trim() ?? '';
             const bText = b.querySelectorAll('td')[colIndex]?.textContent.trim() ?? '';
@@ -623,8 +1133,165 @@
             return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
         });
 
+        // Reinserta las filas ordenadas
         rows.forEach(r => tbody.appendChild(r));
     }
+
+    /**
+     * Abre un modal
+     * @param {string} modalId - ID del modal
+     * @param {string} mode - 'new' para crear, 'edit' para editar
+     */
+    function openModal(modalId, mode = 'new') {
+        const modal = document.getElementById(modalId);
+        modal.classList.add('active');
+
+        // Limpia el formulario si es modo "new"
+        if (mode === 'new') {
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+            
+            // Actualiza el título del modal
+            const titleEl = modal.querySelector('.modal-header h2');
+            if (titleEl) {
+                const entityName = modalId.replace('modal-', '').replace('-form', '');
+                const titles = {
+                    'user': 'Nuevo Usuario',
+                    'clip': 'Nuevo Clip',
+                    'game': 'Nuevo Juego',
+                    'mark': 'Nueva Marca',
+                    'mark-type': 'Nuevo Tipo de Marca',
+                    'user-rate': 'Nueva Valoración',
+                    'user-request': 'Nueva Solicitud'
+                };
+                titleEl.textContent = titles[entityName] || 'Nuevo Registro';
+            }
+        }
+    }
+
+    /**
+     * Cierra un modal
+     * @param {string} modalId - ID del modal
+     */
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('active');
+    }
+
+    /**
+     * Carga los datos de una entidad en el modal para editar
+     * @param {string} entity - Nombre de la entidad
+     * @param {number} id - ID del registro
+     * @param {string} modalId - ID del modal
+     */
+    function editEntity(entity, id, modalId) {
+        fetch(`/failrun/admin/entity/${entity}/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                const modal = document.getElementById(modalId);
+                const form = modal.querySelector('form');
+                const titleEl = modal.querySelector('.modal-header h2');
+
+                // Actualiza el título
+                if (titleEl) titleEl.textContent = 'Editar Registro';
+
+                // Llena los campos del formulario
+                for (let key in data) {
+                    const field = form.elements[key];
+                    if (field) field.value = data[key] || '';
+                }
+
+                openModal(modalId, 'edit');
+            })
+            .catch(() => showToast('Error al cargar el registro', 'error'));
+    }
+
+    /**
+     * Elimina un registro con confirmación
+     * @param {string} entity - Nombre de la entidad
+     * @param {number} id - ID del registro
+     * @param {string} tableId - ID de la tabla
+     */
+    function deleteEntity(entity, id, tableId) {
+        if (!confirm('¿Estás seguro de que deseas eliminar este registro?')) return;
+
+        fetch(`/failrun/admin/entity/${entity}/${id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    // Recarga la tabla (simple refresh de página)
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    showToast(data.error || 'Error al eliminar', 'error');
+                }
+            })
+            .catch(() => showToast('Error en la solicitud', 'error'));
+    }
+
+    /**
+     * Envía el formulario para crear/actualizar un registro
+     * @param {Event} event - Evento del formulario
+     * @param {string} entity - Nombre de la entidad
+     * @param {string} tableId - ID de la tabla
+     */
+    function submitForm(event, entity, tableId) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+
+        // Determina si es crear o actualizar
+        const isUpdate = data.id && data.id !== '';
+        const method = isUpdate ? 'PUT' : 'POST';
+
+        fetch(`/failrun/admin/entity/${entity}`, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    // Cierra el modal y recarga la tabla
+                    const modal = form.closest('.modal');
+                    closeModal(modal.id);
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    showToast(data.error || 'Error al guardar', 'error');
+                }
+            })
+            .catch(() => showToast('Error en la solicitud', 'error'));
+    }
+
+    /**
+     * Muestra una notificación toast
+     * @param {string} message - Mensaje a mostrar
+     * @param {string} type - 'success' o 'error'
+     */
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        // Elimina el toast después de 3 segundos
+        setTimeout(() => {
+            toast.style.animation = 'slideInToast 0.3s reverse';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Cierra modales al hacer clic fuera de ellos
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal(modal.id);
+        });
+    });
 </script>
 
 </body>
