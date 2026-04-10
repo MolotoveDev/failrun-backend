@@ -859,7 +859,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modal-user-title">Nuevo Usuario</h2>
-            <button class="modal-close" onclick="closeModal('modal-user-form')">✕</button>
+            <button type="button" class="modal-close" onclick="closeModal('modal-user-form')">✕</button>
         </div>
         <div class="modal-body">
             <form id="form-user" onsubmit="submitForm(event, 'users', 'users-table')">
@@ -879,8 +879,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modal-user-form')">Cancelar</button>
-            <button class="btn btn-primary" onclick="document.getElementById('form-user').submit()">Guardar</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-user-form')">Cancelar</button>
+            <button type="submit" class="btn btn-primary" form="form-user">Guardar</button>
         </div>
     </div>
 </div>
@@ -890,7 +890,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modal-clip-title">Nuevo Clip</h2>
-            <button class="modal-close" onclick="closeModal('modal-clip-form')">✕</button>
+            <button type="button" class="modal-close" onclick="closeModal('modal-clip-form')">✕</button>
         </div>
         <div class="modal-body">
             <form id="form-clip" onsubmit="submitForm(event, 'clips', 'clips-table')">
@@ -910,8 +910,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modal-clip-form')">Cancelar</button>
-            <button class="btn btn-primary" onclick="document.getElementById('form-clip').submit()">Guardar</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-clip-form')">Cancelar</button>
+            <button type="submit" class="btn btn-primary" form="form-clip">Guardar</button>
         </div>
     </div>
 </div>
@@ -921,7 +921,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modal-game-title">Nuevo Juego</h2>
-            <button class="modal-close" onclick="closeModal('modal-game-form')">✕</button>
+            <button type="button" class="modal-close" onclick="closeModal('modal-game-form')">✕</button>
         </div>
         <div class="modal-body">
             <form id="form-game" onsubmit="submitForm(event, 'games', 'games-table')">
@@ -941,8 +941,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modal-game-form')">Cancelar</button>
-            <button class="btn btn-primary" onclick="document.getElementById('form-game').submit()">Guardar</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-game-form')">Cancelar</button>
+            <button type="submit" class="btn btn-primary" form="form-game">Guardar</button>
         </div>
     </div>
 </div>
@@ -952,7 +952,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modal-mark-title">Nueva Marca</h2>
-            <button class="modal-close" onclick="closeModal('modal-mark-form')">✕</button>
+            <button type="button" class="modal-close" onclick="closeModal('modal-mark-form')">✕</button>
         </div>
         <div class="modal-body">
             <form id="form-mark" onsubmit="submitForm(event, 'marks', 'marks-table')">
@@ -964,8 +964,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modal-mark-form')">Cancelar</button>
-            <button class="btn btn-primary" onclick="document.getElementById('form-mark').submit()">Guardar</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-mark-form')">Cancelar</button>
+            <button type="submit" class="btn btn-primary" form="form-mark">Guardar</button>
         </div>
     </div>
 </div>
@@ -975,7 +975,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modal-mark-type-title">Nuevo Tipo de Marca</h2>
-            <button class="modal-close" onclick="closeModal('modal-mark-type-form')">✕</button>
+            <button type="button" class="modal-close" onclick="closeModal('modal-mark-type-form')">✕</button>
         </div>
         <div class="modal-body">
             <form id="form-mark-type" onsubmit="submitForm(event, 'mark_types', 'mark-types-table')">
@@ -995,8 +995,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modal-mark-type-form')">Cancelar</button>
-            <button class="btn btn-primary" onclick="document.getElementById('form-mark-type').submit()">Guardar</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-mark-type-form')">Cancelar</button>
+            <button type="submit" class="btn btn-primary" form="form-mark-type">Guardar</button>
         </div>
     </div>
 </div>
@@ -1006,7 +1006,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modal-user-rate-title">Nueva Valoración</h2>
-            <button class="modal-close" onclick="closeModal('modal-user-rate-form')">✕</button>
+            <button type="button" class="modal-close" onclick="closeModal('modal-user-rate-form')">✕</button>
         </div>
         <div class="modal-body">
             <form id="form-user-rate" onsubmit="submitForm(event, 'user_rates', 'user-rates-table')">
@@ -1022,8 +1022,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modal-user-rate-form')">Cancelar</button>
-            <button class="btn btn-primary" onclick="document.getElementById('form-user-rate').submit()">Guardar</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-user-rate-form')">Cancelar</button>
+            <button type="submit" class="btn btn-primary" form="form-user-rate">Guardar</button>
         </div>
     </div>
 </div>
@@ -1033,7 +1033,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modal-user-request-title">Nueva Solicitud</h2>
-            <button class="modal-close" onclick="closeModal('modal-user-request-form')">✕</button>
+            <button type="button" class="modal-close" onclick="closeModal('modal-user-request-form')">✕</button>
         </div>
         <div class="modal-body">
             <form id="form-user-request" onsubmit="submitForm(event, 'user_requests', 'user-requests-table')">
@@ -1053,8 +1053,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modal-user-request-form')">Cancelar</button>
-            <button class="btn btn-primary" onclick="document.getElementById('form-user-request').submit()">Guardar</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-user-request-form')">Cancelar</button>
+            <button type="submit" class="btn btn-primary" form="form-user-request">Guardar</button>
         </div>
     </div>
 </div>
