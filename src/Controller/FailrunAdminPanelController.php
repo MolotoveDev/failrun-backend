@@ -9,12 +9,14 @@ use App\Entity\MarkType;
 use App\Entity\User;
 use App\Entity\UserRate;
 use App\Entity\UserRequest;
+use App\Form\Admin\UserAdminType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 /**
@@ -119,6 +121,25 @@ final class FailrunAdminPanelController extends AbstractController
             return $this->json(['error' => 'Registro no encontrado'], 404);
         }
 
+        if ($entity === 'users' && $record instanceof User) {
+            $roles = $record->getRoles();
+            $role = 'ROLE_USER';
+
+            if (in_array('ROLE_ADMIN', $roles, true)) {
+                $role = 'ROLE_ADMIN';
+            } elseif (in_array('ROLE_MODERATOR', $roles, true)) {
+                $role = 'ROLE_MODERATOR';
+            }
+
+            return $this->json([
+                'id' => $record->getId(),
+                'username' => $record->getUsername(),
+                'email' => $record->getEmail(),
+                'profilePic' => $record->getProfilePic(),
+                'role' => $role,
+            ]);
+        }
+
         // Convierte el objeto a array (simplificado para entidades básicas)
         return $this->json($this->entityToArray($record));
     }
@@ -136,7 +157,12 @@ final class FailrunAdminPanelController extends AbstractController
      * @return JsonResponse Respuesta con el resultado de la operación
      */
     #[Route('/failrun/admin/entity/{entity}', name: 'app_failrun_admin_save_entity', methods: ['POST', 'PUT'])]
-    public function saveEntity(string $entity, Request $request, EntityManagerInterface $em): JsonResponse
+    public function saveEntity(
+        string $entity,
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher
+    ): JsonResponse
     {
         // Verifica permisos de admin
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -157,10 +183,17 @@ final class FailrunAdminPanelController extends AbstractController
             return $this->json(['error' => 'Entidad no válida'], 400);
         }
 
-        try {
-            // Obtiene los datos del request (JSON o form data)
-            $data = json_decode($request->getContent(), true) ?? $request->request->all();
+        // Obtiene los datos del request (JSON o form data)
+        $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            $data = $request->request->all();
+        }
 
+        if ($entity === 'users') {
+            return $this->saveUserEntity($data, $em, $passwordHasher);
+        }
+
+        try {
             // Determina si es una actualización o creación
             $isUpdate = isset($data['id']) && !empty($data['id']);
             $className = $entityMap[$entity];
@@ -204,6 +237,89 @@ final class FailrunAdminPanelController extends AbstractController
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Crea o actualiza usuarios usando Symfony Forms y hasheo seguro de contraseña.
+     */
+    private function saveUserEntity(
+        array $data,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher
+    ): JsonResponse {
+        try {
+            $isUpdate = isset($data['id']) && !empty($data['id']);
+
+            if ($isUpdate) {
+                $user = $em->getRepository(User::class)->find($data['id']);
+                if (!$user instanceof User) {
+                    return $this->json(['error' => 'Registro no encontrado'], 404);
+                }
+            } else {
+                $user = new User();
+                $user->setRegisterDate(new \DateTime());
+            }
+
+            $form = $this->createForm(UserAdminType::class, $user, [
+                'csrf_protection' => false,
+                'is_edit' => $isUpdate,
+            ]);
+
+            // En edición no se vacían campos no enviados; en creación sí se exige payload completo.
+            $form->submit($data, !$isUpdate);
+
+            if (!$form->isValid()) {
+                return $this->json([
+                    'success' => false,
+                    'error' => implode(' | ', $this->collectFormErrors($form)),
+                ], 400);
+            }
+
+            $role = (string) $form->get('role')->getData();
+            if ($role === 'ROLE_ADMIN') {
+                $user->setRoles(['ROLE_ADMIN']);
+            } elseif ($role === 'ROLE_MODERATOR') {
+                $user->setRoles(['ROLE_MODERATOR']);
+            } else {
+                $user->setRoles([]);
+            }
+
+            $plainPassword = (string) $form->get('plainPassword')->getData();
+            if (!$isUpdate && $plainPassword === '') {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'La contraseña es obligatoria al crear un usuario',
+                ], 400);
+            }
+
+            if ($plainPassword !== '') {
+                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+            }
+
+            $em->persist($user);
+            $em->flush();
+
+            return $this->json([
+                'success' => true,
+                'message' => $isUpdate ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente',
+                'id' => $user->getId(),
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function collectFormErrors($form): array
+    {
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[] = $error->getMessage();
+        }
+
+        return array_values(array_unique($errors));
     }
 
     /**
