@@ -2,6 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Clips;
+use App\Entity\Games;
+use App\Entity\Mark;
+use App\Entity\MarkType;
+use App\Entity\User;
+use App\Entity\UserRate;
+use App\Entity\UserRequest;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,11 +34,19 @@ final class FailrunAdminPanelController extends AbstractController
     }
 
     #[Route('/failrun/admin/panel', name: 'app_failrun_admin_panel')]
-    public function index(): Response
+    public function index(EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        
-        return $this->render('failrun_admin_panel/index.html.twig');
+
+        return $this->render('failrun_admin_panel/index.html.twig', [
+            'users'        => $em->getRepository(User::class)->findAll(),
+            'clips'        => $em->getRepository(Clips::class)->findAll(),
+            'games'        => $em->getRepository(Games::class)->findAll(),
+            'marks'        => $em->getRepository(Mark::class)->findAll(),
+            'mark_types'   => $em->getRepository(MarkType::class)->findAll(),
+            'user_rates'   => $em->getRepository(UserRate::class)->findAll(),
+            'user_requests'=> $em->getRepository(UserRequest::class)->findAll(),
+        ]);
     }
 
     #[Route('/failrun/admin/logout', name: 'app_failrun_admin_logout')]
