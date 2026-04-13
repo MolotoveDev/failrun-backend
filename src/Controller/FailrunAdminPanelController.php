@@ -9,14 +9,13 @@ use App\Entity\MarkType;
 use App\Entity\User;
 use App\Entity\UserRate;
 use App\Entity\UserRequest;
-use App\Form\Admin\UserAdminType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Authentication\UserPasswordHasherInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 /**
@@ -210,7 +209,6 @@ final class FailrunAdminPanelController extends AbstractController
             }
 
             // Asigna los datos al objeto (método genérico simple)
-            // En producción, considera usar un DTO/FormType propio de Symfony
             foreach ($data as $key => $value) {
                 if ($key !== 'id') {
                     // Convierte nombres camelCase a setters (ej: 'userName' -> 'setUserName')
@@ -240,7 +238,7 @@ final class FailrunAdminPanelController extends AbstractController
     }
 
     /**
-     * Crea o actualiza usuarios usando Symfony Forms y hasheo seguro de contraseña.
+     * Crea o actualiza usuarios con hasheo seguro de contraseña.
      */
     private function saveUserEntity(
         array $data,
@@ -260,22 +258,32 @@ final class FailrunAdminPanelController extends AbstractController
                 $user->setRegisterDate(new \DateTime());
             }
 
-            $form = $this->createForm(UserAdminType::class, $user, [
-                'csrf_protection' => false,
-                'is_edit' => $isUpdate,
-            ]);
-
-            // En edición no se vacían campos no enviados; en creación sí se exige payload completo.
-            $form->submit($data, !$isUpdate);
-
-            if (!$form->isValid()) {
-                return $this->json([
-                    'success' => false,
-                    'error' => implode(' | ', $this->collectFormErrors($form)),
-                ], 400);
+            // Valida campos obligatorios en creación
+            if (!$isUpdate) {
+                if (empty($data['username'])) {
+                    return $this->json(['success' => false, 'error' => 'El username es obligatorio'], 400);
+                }
+                if (empty($data['email'])) {
+                    return $this->json(['success' => false, 'error' => 'El email es obligatorio'], 400);
+                }
+                if (empty($data['plainPassword'])) {
+                    return $this->json(['success' => false, 'error' => 'La contraseña es obligatoria al crear un usuario'], 400);
+                }
             }
 
-            $role = (string) $form->get('role')->getData();
+            // Asigna campos básicos si vienen en el payload
+            if (!empty($data['username'])) {
+                $user->setUsername($data['username']);
+            }
+            if (!empty($data['email'])) {
+                $user->setEmail($data['email']);
+            }
+            if (isset($data['profilePic'])) {
+                $user->setProfilePic($data['profilePic']);
+            }
+
+            // Asigna el rol
+            $role = $data['role'] ?? 'ROLE_USER';
             if ($role === 'ROLE_ADMIN') {
                 $user->setRoles(['ROLE_ADMIN']);
             } elseif ($role === 'ROLE_MODERATOR') {
@@ -284,14 +292,8 @@ final class FailrunAdminPanelController extends AbstractController
                 $user->setRoles([]);
             }
 
-            $plainPassword = (string) $form->get('plainPassword')->getData();
-            if (!$isUpdate && $plainPassword === '') {
-                return $this->json([
-                    'success' => false,
-                    'error' => 'La contraseña es obligatoria al crear un usuario',
-                ], 400);
-            }
-
+            // Hashea la contraseña solo si se ha enviado una nueva
+            $plainPassword = $data['plainPassword'] ?? '';
             if ($plainPassword !== '') {
                 $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
             }
@@ -310,16 +312,6 @@ final class FailrunAdminPanelController extends AbstractController
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    private function collectFormErrors($form): array
-    {
-        $errors = [];
-        foreach ($form->getErrors(true) as $error) {
-            $errors[] = $error->getMessage();
-        }
-
-        return array_values(array_unique($errors));
     }
 
     /**
