@@ -13,6 +13,7 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\User; //Importamos la entidad User
 use App\Entity\UserRequest; //Importamos la entidad UserRequest
+use App\Entity\Games; //Importamos la entidad Game
 
 final class FailrunApiController extends AbstractController
 {
@@ -120,5 +121,43 @@ final class FailrunApiController extends AbstractController
         $em->flush();
 
         return new JsonResponse(['status' => 'success', 'message' => 'Request submitted successfully'], 201);
+    }
+
+    #[Route('/failrun/api/get-user-requests', name: 'app_failrun_api_get_user_requests', methods: ['GET'])]
+    public function getUserRequests(Security $security, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $security->getUser();
+        $requests = $em->getRepository(UserRequest::class)->findBy(['userId' => $user]);
+
+        $data = [];
+        foreach ($requests as $request) {
+            $data[] = [
+                'id' => $request->getId(),
+                'title' => $request->getTitleRequest(),
+                'description' => $request->getDescriptionRequest(),
+                'date' => $request->getDateRequest()->format('Y-m-d H:i:s'),
+                'status' => $request->getStatusRequest(),
+            ];
+        }
+
+        return new JsonResponse(['status' => 'success', 'data' => $data], 200);
+    }
+
+    #[Route('/failrun/api/get-games', name: 'app_failrun_api_get_games', methods: ['GET'])]
+    public function getGames(): JsonResponse
+    {
+        $games = $em->getRepository(Game::class)->findAll();
+
+        $data = [];
+        foreach ($games as $game) {
+            $data[] = [
+                'id' => $game->getId(),
+                'name' => $game->getName(),
+                'description' => $game->getDescription(),
+                'coverImage' => $game->getCoverImage(),
+            ];
+        }
+
+        return new JsonResponse(['status' => 'success', 'data' => $data], 200);
     }
 }
