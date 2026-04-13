@@ -591,6 +591,7 @@
                             <td>{{ clip.gameId ? clip.gameId.gameName : '—' }}</td>
                             <td>
                                 <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="viewDetails('clips', {{ clip.id }}, 'modal-clip-view')">Ver</button>
                                     <button class="btn btn-edit" onclick="editEntity('clips', {{ clip.id }}, 'modal-clip-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('clips', {{ clip.id }}, 'clips-table')">Eliminar</button>
                                 </div>
@@ -638,6 +639,7 @@
                             <td>{{ game.coverImg ?? '—' }}</td>
                             <td>
                                 <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="viewDetails('games', {{ game.id }}, 'modal-game-view')">Ver</button>
                                     <button class="btn btn-edit" onclick="editEntity('games', {{ game.id }}, 'modal-game-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('games', {{ game.id }}, 'games-table')">Eliminar</button>
                                 </div>
@@ -687,6 +689,7 @@
                             <td>{{ mark.idMarkType ? mark.idMarkType.markName : '—' }}</td>
                             <td>
                                 <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="viewDetails('marks', {{ mark.id }}, 'modal-mark-view')">Ver</button>
                                     <button class="btn btn-edit" onclick="editEntity('marks', {{ mark.id }}, 'modal-mark-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('marks', {{ mark.id }}, 'marks-table')">Eliminar</button>
                                 </div>
@@ -734,6 +737,7 @@
                             <td>{{ mt.markLogoUrl ?? '—' }}</td>
                             <td>
                                 <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="viewDetails('mark_types', {{ mt.id }}, 'modal-mark-type-view')">Ver</button>
                                     <button class="btn btn-edit" onclick="editEntity('mark_types', {{ mt.id }}, 'modal-mark-type-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('mark_types', {{ mt.id }}, 'mark-types-table')">Eliminar</button>
                                 </div>
@@ -785,6 +789,7 @@
                             <td>{{ rate.clipId ? rate.clipId.clipTitle : '—' }}</td>
                             <td>
                                 <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="viewDetails('user_rates', {{ rate.id }}, 'modal-user-rate-view')">Ver</button>
                                     <button class="btn btn-edit" onclick="editEntity('user_rates', {{ rate.id }}, 'modal-user-rate-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('user_rates', {{ rate.id }}, 'user-rates-table')">Eliminar</button>
                                 </div>
@@ -845,6 +850,7 @@
                             <td>{{ req.userId ? req.userId.username : '—' }}</td>
                             <td>
                                 <div class="action-cell">
+                                    <button class="btn btn-edit" onclick="viewDetails('user_requests', {{ req.id }}, 'modal-user-request-view')">Ver</button>
                                     <button class="btn btn-edit" onclick="editEntity('user_requests', {{ req.id }}, 'modal-user-request-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('user_requests', {{ req.id }}, 'user-requests-table')">Eliminar</button>
                                 </div>
@@ -860,6 +866,226 @@
     </div>
 
 </main>
+
+<!-- MODALES DE VISTA DETALLADA -->
+
+<!-- MODAL VER SOLICITUD -->
+<div class="modal" id="modal-user-request-view">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Detalles de Solicitud</h2>
+            <button type="button" class="modal-close" onclick="closeModal('modal-user-request-view')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>ID</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="req-view-id">—</div>
+            </div>
+            <div class="form-group">
+                <label>Título</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="req-view-title">—</div>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text); min-height: 80px; word-break: break-word;" id="req-view-description">—</div>
+            </div>
+            <div class="form-group">
+                <label>Fecha</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="req-view-date">—</div>
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="req-view-status">—</div>
+            </div>
+            <div class="form-group">
+                <label>Usuario</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="req-view-user">—</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-user-request-view')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VER CLIP -->
+<div class="modal" id="modal-clip-view">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Detalles de Clip</h2>
+            <button type="button" class="modal-close" onclick="closeModal('modal-clip-view')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>ID</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="clip-view-id">—</div>
+            </div>
+            <div class="form-group">
+                <label>Título</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="clip-view-title">—</div>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text); min-height: 80px; word-break: break-word;" id="clip-view-description">—</div>
+            </div>
+            <div class="form-group">
+                <label>Fecha</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="clip-view-date">—</div>
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="clip-view-status">—</div>
+            </div>
+            <div class="form-group">
+                <label>Usuario</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="clip-view-user">—</div>
+            </div>
+            <div class="form-group">
+                <label>Juego</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="clip-view-game">—</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-clip-view')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VER JUEGO -->
+<div class="modal" id="modal-game-view">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Detalles de Juego</h2>
+            <button type="button" class="modal-close" onclick="closeModal('modal-game-view')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>ID</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="game-view-id">—</div>
+            </div>
+            <div class="form-group">
+                <label>Nombre</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="game-view-name">—</div>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text); min-height: 80px; word-break: break-word;" id="game-view-description">—</div>
+            </div>
+            <div class="form-group">
+                <label>Cover</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text); word-break: break-all;" id="game-view-cover">—</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-game-view')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VER MARCA -->
+<div class="modal" id="modal-mark-view">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Detalles de Marca</h2>
+            <button type="button" class="modal-close" onclick="closeModal('modal-mark-view')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>ID</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="mark-view-id">—</div>
+            </div>
+            <div class="form-group">
+                <label>Valoración</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="mark-view-rate">—</div>
+            </div>
+            <div class="form-group">
+                <label>Fecha</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="mark-view-date">—</div>
+            </div>
+            <div class="form-group">
+                <label>Clip</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="mark-view-clip">—</div>
+            </div>
+            <div class="form-group">
+                <label>Tipo de Marca</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="mark-view-type">—</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-mark-view')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VER TIPO DE MARCA -->
+<div class="modal" id="modal-mark-type-view">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Detalles de Tipo de Marca</h2>
+            <button type="button" class="modal-close" onclick="closeModal('modal-mark-type-view')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>ID</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="mark-type-view-id">—</div>
+            </div>
+            <div class="form-group">
+                <label>Nombre</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="mark-type-view-name">—</div>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text); min-height: 80px; word-break: break-word;" id="mark-type-view-description">—</div>
+            </div>
+            <div class="form-group">
+                <label>Logo URL</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text); word-break: break-all;" id="mark-type-view-logo">—</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-mark-type-view')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VER VALORACIÓN -->
+<div class="modal" id="modal-user-rate-view">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Detalles de Valoración</h2>
+            <button type="button" class="modal-close" onclick="closeModal('modal-user-rate-view')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>ID</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="user-rate-view-id">—</div>
+            </div>
+            <div class="form-group">
+                <label>Valoración</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="user-rate-view-rate">—</div>
+            </div>
+            <div class="form-group">
+                <label>Comentario</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text); min-height: 80px; word-break: break-word;" id="user-rate-view-comment">—</div>
+            </div>
+            <div class="form-group">
+                <label>Fecha</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="user-rate-view-date">—</div>
+            </div>
+            <div class="form-group">
+                <label>Usuario</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="user-rate-view-user">—</div>
+            </div>
+            <div class="form-group">
+                <label>Clip</label>
+                <div style="padding: 0.6rem 1rem; background: var(--surface2); border-radius: 8px; color: var(--text);" id="user-rate-view-clip">—</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-user-rate-view')">Cerrar</button>
+        </div>
+    </div>
+</div>
 
 <!-- MODALES CRUD -->
 
@@ -926,8 +1152,13 @@
                     <textarea name="clipDescription" id="clip-clipDescription"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Estado (0=Pendiente, 1=Aceptado, 2=Rechazado)</label>
-                    <input type="number" name="clipStatus" id="clip-clipStatus" min="0" max="2">
+                    <label>Estado</label>
+                    <select name="clipStatus" id="clip-clipStatus">
+                        <option value="">Selecciona un estado</option>
+                        <option value="0">Pendiente</option>
+                        <option value="1">Aceptado</option>
+                        <option value="2">Rechazado</option>
+                    </select>
                 </div>
             </form>
         </div>
@@ -1069,8 +1300,13 @@
                     <textarea name="descriptionRequest" id="user-request-descriptionRequest" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Estado (0=Pendiente, 1=Aceptado, 2=Rechazado)</label>
-                    <input type="number" name="statusRequest" id="user-request-statusRequest" min="0" max="2">
+                    <label>Estado</label>
+                    <select name="statusRequest" id="user-request-statusRequest" required>
+                        <option value="">Selecciona un estado</option>
+                        <option value="0">Pendiente</option>
+                        <option value="1">Aceptado</option>
+                        <option value="2">Rechazado</option>
+                    </select>
                 </div>
             </form>
         </div>
@@ -1319,6 +1555,72 @@
             toast.style.animation = 'slideInToast 0.3s reverse';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    }
+
+    /**
+     * Carga los detalles de una entidad en un modal de vista
+     * @param {string} entity - Nombre de la entidad
+     * @param {number} id - ID del registro
+     * @param {string} modalId - ID del modal
+     */
+    function viewDetails(entity, id, modalId) {
+        fetch(`/failrun/admin/entity/${entity}/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                const modal = document.getElementById(modalId);
+                
+                // Mapea los datos según la entidad
+                if (entity === 'user_requests') {
+                    document.getElementById('req-view-id').textContent = data.id;
+                    document.getElementById('req-view-title').textContent = data.titleRequest || '—';
+                    document.getElementById('req-view-description').textContent = data.descriptionRequest || '—';
+                    document.getElementById('req-view-date').textContent = data.dateRequest ? new Date(data.dateRequest).toLocaleDateString('es-ES') : '—';
+                    const statusText = data.statusRequest === 0 ? 'Pendiente' : (data.statusRequest === 1 ? 'Aceptado' : 'Rechazado');
+                    document.getElementById('req-view-status').innerHTML = `<span class="badge badge-${data.statusRequest === 0 ? 'pending' : (data.statusRequest === 1 ? 'accepted' : 'rejected')}">${statusText}</span>`;
+                    document.getElementById('req-view-user').textContent = data.userId?.username || '—';
+                }
+                else if (entity === 'clips') {
+                    document.getElementById('clip-view-id').textContent = data.id;
+                    document.getElementById('clip-view-title').textContent = data.clipTitle || '—';
+                    document.getElementById('clip-view-description').textContent = data.clipDescription || '—';
+                    document.getElementById('clip-view-date').textContent = data.clipDate ? new Date(data.clipDate).toLocaleDateString('es-ES') : '—';
+                    const statusText = data.clipStatus === 0 ? 'Pendiente' : (data.clipStatus === 1 ? 'Aceptado' : 'Rechazado');
+                    document.getElementById('clip-view-status').innerHTML = `<span class="badge badge-${data.clipStatus === 0 ? 'pending' : (data.clipStatus === 1 ? 'accepted' : 'rejected')}">${statusText}</span>`;
+                    document.getElementById('clip-view-user').textContent = data.userId?.username || '—';
+                    document.getElementById('clip-view-game').textContent = data.gameId?.gameName || '—';
+                }
+                else if (entity === 'games') {
+                    document.getElementById('game-view-id').textContent = data.id;
+                    document.getElementById('game-view-name').textContent = data.gameName || '—';
+                    document.getElementById('game-view-description').textContent = data.gameDescription || '—';
+                    document.getElementById('game-view-cover').textContent = data.coverImg || '—';
+                }
+                else if (entity === 'marks') {
+                    document.getElementById('mark-view-id').textContent = data.id;
+                    document.getElementById('mark-view-rate').textContent = data.markRate || '—';
+                    document.getElementById('mark-view-date').textContent = data.markDate ? new Date(data.markDate).toLocaleDateString('es-ES') : '—';
+                    document.getElementById('mark-view-clip').textContent = data.clipId?.clipTitle || '—';
+                    document.getElementById('mark-view-type').textContent = data.idMarkType?.markName || '—';
+                }
+                else if (entity === 'mark_types') {
+                    document.getElementById('mark-type-view-id').textContent = data.id;
+                    document.getElementById('mark-type-view-name').textContent = data.markName || '—';
+                    document.getElementById('mark-type-view-description').textContent = data.markDescription || '—';
+                    document.getElementById('mark-type-view-logo').textContent = data.markLogoUrl || '—';
+                }
+                else if (entity === 'user_rates') {
+                    document.getElementById('user-rate-view-id').textContent = data.id;
+                    document.getElementById('user-rate-view-rate').textContent = data.rate || '—';
+                    document.getElementById('user-rate-view-comment').textContent = data.userComment || '—';
+                    document.getElementById('user-rate-view-date').textContent = data.rateDate ? new Date(data.rateDate).toLocaleDateString('es-ES') : '—';
+                    document.getElementById('user-rate-view-user').textContent = data.userId?.username || '—';
+                    document.getElementById('user-rate-view-clip').textContent = data.clipId?.clipTitle || '—';
+                }
+                
+                // Abre el modal
+                modal.classList.add('active');
+            })
+            .catch(() => showToast('Error al cargar los detalles', 'error'));
     }
 
     // Cierra modales al hacer clic fuera de ellos
