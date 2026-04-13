@@ -100,7 +100,7 @@ final class FailrunApiController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         $userRequest = new UserRequest();
-        $userRequest->setUser($user);
+        $userRequest->setUserId($user);
         
         if (!empty($data['title'])) {
             $userRequest->setTitleRequest($data['title']);
@@ -114,8 +114,8 @@ final class FailrunApiController extends AbstractController
             return new JsonResponse(['status' => 'error', 'message' => 'Description is required'], 400);
         }
 
-        $userRequest->setCreatedAt(new \DateTime());
-        $userRequest->setStatus(0); //0 = pending, 1 = accepted, 2 = rejected
+        $userRequest->setDateRequest(new \DateTime());
+        $userRequest->setStatusRequest(0); //0 = pending, 1 = accepted, 2 = rejected
         $em->persist($userRequest);
         $em->flush();
 
