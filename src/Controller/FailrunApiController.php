@@ -27,7 +27,7 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/test', name: 'app_failrun_api_test')]
     public function test(): Response
     {
-        return $this->json(['message' => 'Hello, World!']); //Simple test endpoint to verify API is working. Can also be used as a health check.
+        return $this->json(['message' => 'Hello, World!!!!!']); //Simple test endpoint to verify API is working. Can also be used as a health check.
     }
 
     #[Route('/failrun/api/register', name: 'app_failrun_api_register')]
@@ -90,5 +90,34 @@ final class FailrunApiController extends AbstractController
                 'profilePic' => $user->getProfilePic(),
             ]
         ], 200);
+    }
+
+    #[Route('/failrun/api/send-user-request', name: 'app_failrun_api_send_user_request', methods: ['POST'])]
+    public function sendUserRequest(Request $request, Security $security, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $security->getUser();
+        $data = json_decode($request->getContent(), true);
+
+        $userRequest = new UserRequest();
+        $userRequest->setUser($user);
+        
+        if (!empty($data['title'])) {
+            $userRequest->setTitleRequest($data['title']);
+        } else {
+            return new JsonResponse(['status' => 'error', 'message' => 'Title is required'], 400);
+        }
+
+        if (!empty($data['description'])) {
+            $userRequest->setDescriptionRequest($data['description']);
+        } else {
+            return new JsonResponse(['status' => 'error', 'message' => 'Description is required'], 400);
+        }
+
+        $userRequest->setCreatedAt(new \DateTime());
+        $userRequest->setStatus(0); //0 = pending, 1 = accepted, 2 = rejected
+        $em->persist($userRequest);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success', 'message' => 'Request submitted successfully'], 201);
     }
 }
