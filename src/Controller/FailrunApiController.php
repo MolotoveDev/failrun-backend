@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\User; //Importamos la entidad User
+use App\Entity\UserRequest; //Importamos la entidad UserRequest
 
 final class FailrunApiController extends AbstractController
 {
