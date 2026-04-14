@@ -127,7 +127,7 @@ final class FailrunApiController extends AbstractController
     public function getUserRequests(Security $security, EntityManagerInterface $em): JsonResponse
     {
         $user = $security->getUser();
-        $requests = $em->getRepository(UserRequest::class)->findBy(['userId' => $user]);
+        $requests = $em->getRepository(UserRequest::class)->findBy(['user_id' => $user]);
 
         $data = [];
         foreach ($requests as $request) {
