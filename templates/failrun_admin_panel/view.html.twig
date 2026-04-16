@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Failrun — Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --red: #FF2D55;
+            --red-dark: #CF2949;
+            --bg: #333335;
+            --surface: #41414A;
+            --surface2: #2a2a30;
+            --text: #ffffff;
+            --text-muted: rgba(255,255,255,0.4);
+            --border: rgba(255,255,255,0.07);
+        }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            height: 60px;
+            background-color: var(--red);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; }
+        .nav-brand span { opacity: 0.7; font-weight: 600; font-size: 0.85rem; letter-spacing: 2px; margin-left: 0.5rem; vertical-align: middle; }
+
+        .nav-logout {
+            background: rgba(0,0,0,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.4rem 1.2rem;
+            border-radius: 8px;
+            font-family: "Montserrat", sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .nav-logout:hover { background: rgba(0,0,0,0.4); }
+
+        main {
+            padding: 2rem;
+            flex: 1;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .breadcrumb a:hover { color: var(--text); }
+        .breadcrumb .sep { opacity: 0.3; }
+        .breadcrumb .current { color: var(--text); }
+
+        .detail-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            gap: 1rem;
+        }
+
+        .detail-header-left { display: flex; flex-direction: column; gap: 0.4rem; }
+
+        .entity-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--red);
+        }
+
+        .detail-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
+        .detail-id { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+
+        .fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        .field-full { grid-column: 1 / -1; }
+
+        .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
+        .field-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .field-value {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            color: var(--text);
+            font-size: 0.9rem;
+            font-weight: 500;
+            word-break: break-word;
+            min-height: 2.6rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .field-value.multiline { align-items: flex-start; min-height: 80px; line-height: 1.5; }
+        .field-value.url { font-size: 0.8rem; word-break: break-all; color: rgba(255,255,255,0.7); }
+        .field-empty { color: var(--text-muted); font-style: italic; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .badge-pending  { background: rgba(255,204,0,0.15);  color: #FFCC00; }
+        .badge-accepted { background: rgba(52,199,89,0.15);  color: #34C759; }
+        .badge-rejected { background: rgba(255,45,85,0.15);  color: var(--red); }
+
+        .detail-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 0.6rem 1.4rem;
+            border: none;
+            border-radius: 8px;
+            font-family: "Montserrat", sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+
+        @media (max-width: 600px) {
+            main { padding: 1rem; }
+            .fields-grid { grid-template-columns: 1fr; }
+            .field-full { grid-column: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-brand">FAILRUN <span>ADMIN PANEL</span></div>
+    <a href="{{ path('app_failrun_admin_logout') }}" class="nav-logout">CERRAR SESIÓN</a>
+</nav>
+
+<main>
+
+    {# BREADCRUMB #}
+    <div class="breadcrumb">
+        <a href="{{ path('app_failrun_admin_panel') }}">Panel</a>
+        <span class="sep">›</span>
+        {% if entity == 'clips' %}
+            <span class="sep-text">Clips</span><span class="sep">›</span><span class="current">Clip #{{ record.id }}</span>
+        {% elseif entity == 'games' %}
+            <span class="sep-text">Juegos</span><span class="sep">›</span><span class="current">Juego #{{ record.id }}</span>
+        {% elseif entity == 'marks' %}
+            <span class="sep-text">Marcas</span><span class="sep">›</span><span class="current">Marca #{{ record.id }}</span>
+        {% elseif entity == 'mark_types' %}
+            <span class="sep-text">Tipos de Marca</span><span class="sep">›</span><span class="current">Tipo #{{ record.id }}</span>
+        {% elseif entity == 'user_rates' %}
+            <span class="sep-text">Valoraciones</span><span class="sep">›</span><span class="current">Valoración #{{ record.id }}</span>
+        {% elseif entity == 'user_requests' %}
+            <span class="sep-text">Solicitudes</span><span class="sep">›</span><span class="current">Solicitud #{{ record.id }}</span>
+        {% endif %}
+    </div>
+
+    <div class="detail-card">
+
+        {# ── CLIPS ── #}
+        {% if entity == 'clips' %}
+        <div class="detail-header">
+            <div class="detail-header-left">
+                <span class="entity-label">Clip</span>
+                <span class="detail-title">{{ record.clipTitle }}</span>
+                <span class="detail-id">#{{ record.id }}</span>
+            </div>
+            <div>
+                {% if record.clipStatus == 0 %}<span class="badge badge-pending">PENDIENTE</span>
+                {% elseif record.clipStatus == 1 %}<span class="badge badge-accepted">ACEPTADO</span>
+                {% else %}<span class="badge badge-rejected">RECHAZADO</span>{% endif %}
+            </div>
+        </div>
+        <div class="fields-grid">
+            <div class="field-group">
+                <span class="field-label">ID</span>
+                <div class="field-value">{{ record.id }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Fecha</span>
+                <div class="field-value">{{ record.clipDate ? record.clipDate|date('d/m/Y H:i') : '—' }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Usuario</span>
+                <div class="field-value">{{ record.userId ? record.userId.username : '—' }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Juego</span>
+                <div class="field-value">{{ record.gameId ? record.gameId.gameName : '—' }}</div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Descripción</span>
+                <div class="field-value multiline">
+                    {% if record.clipDescription %}{{ record.clipDescription }}{% else %}<span class="field-empty">Sin descripción</span>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── GAMES ── #}
+        {% elseif entity == 'games' %}
+        <div class="detail-header">
+            <div class="detail-header-left">
+                <span class="entity-label">Juego</span>
+                <span class="detail-title">{{ record.gameName }}</span>
+                <span class="detail-id">#{{ record.id }}</span>
+            </div>
+        </div>
+        <div class="fields-grid">
+            <div class="field-group">
+                <span class="field-label">ID</span>
+                <div class="field-value">{{ record.id }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Nombre</span>
+                <div class="field-value">{{ record.gameName }}</div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Cover URL</span>
+                <div class="field-value url">
+                    {% if record.coverImg %}{{ record.coverImg }}{% else %}<span class="field-empty">Sin imagen</span>{% endif %}
+                </div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Descripción</span>
+                <div class="field-value multiline">
+                    {% if record.gameDescription %}{{ record.gameDescription }}{% else %}<span class="field-empty">Sin descripción</span>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── MARKS ── #}
+        {% elseif entity == 'marks' %}
+        <div class="detail-header">
+            <div class="detail-header-left">
+                <span class="entity-label">Marca</span>
+                <span class="detail-title">Valoración: {{ record.markRate }}</span>
+                <span class="detail-id">#{{ record.id }}</span>
+            </div>
+        </div>
+        <div class="fields-grid">
+            <div class="field-group">
+                <span class="field-label">ID</span>
+                <div class="field-value">{{ record.id }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Valoración</span>
+                <div class="field-value">{{ record.markRate }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Fecha</span>
+                <div class="field-value">{{ record.markDate ? record.markDate|date('d/m/Y H:i') : '—' }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Tipo de Marca</span>
+                <div class="field-value">{{ record.idMarkType ? record.idMarkType.markName : '—' }}</div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Clip</span>
+                <div class="field-value">{{ record.clipId ? record.clipId.clipTitle : '—' }}</div>
+            </div>
+        </div>
+
+        {# ── MARK TYPES ── #}
+        {% elseif entity == 'mark_types' %}
+        <div class="detail-header">
+            <div class="detail-header-left">
+                <span class="entity-label">Tipo de Marca</span>
+                <span class="detail-title">{{ record.markName }}</span>
+                <span class="detail-id">#{{ record.id }}</span>
+            </div>
+        </div>
+        <div class="fields-grid">
+            <div class="field-group">
+                <span class="field-label">ID</span>
+                <div class="field-value">{{ record.id }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Nombre</span>
+                <div class="field-value">{{ record.markName }}</div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Logo URL</span>
+                <div class="field-value url">
+                    {% if record.markLogoUrl %}{{ record.markLogoUrl }}{% else %}<span class="field-empty">Sin logo</span>{% endif %}
+                </div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Descripción</span>
+                <div class="field-value multiline">
+                    {% if record.markDescription %}{{ record.markDescription }}{% else %}<span class="field-empty">Sin descripción</span>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── USER RATES ── #}
+        {% elseif entity == 'user_rates' %}
+        <div class="detail-header">
+            <div class="detail-header-left">
+                <span class="entity-label">Valoración de Usuario</span>
+                <span class="detail-title">Valoración: {{ record.rate }}</span>
+                <span class="detail-id">#{{ record.id }}</span>
+            </div>
+        </div>
+        <div class="fields-grid">
+            <div class="field-group">
+                <span class="field-label">ID</span>
+                <div class="field-value">{{ record.id }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Valoración</span>
+                <div class="field-value">{{ record.rate }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Fecha</span>
+                <div class="field-value">{{ record.rateDate ? record.rateDate|date('d/m/Y H:i') : '—' }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Usuario</span>
+                <div class="field-value">{{ record.userId ? record.userId.username : '—' }}</div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Clip</span>
+                <div class="field-value">{{ record.clipId ? record.clipId.clipTitle : '—' }}</div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Comentario</span>
+                <div class="field-value multiline">
+                    {% if record.userComment %}{{ record.userComment }}{% else %}<span class="field-empty">Sin comentario</span>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── USER REQUESTS ── #}
+        {% elseif entity == 'user_requests' %}
+        <div class="detail-header">
+            <div class="detail-header-left">
+                <span class="entity-label">Solicitud</span>
+                <span class="detail-title">{{ record.titleRequest }}</span>
+                <span class="detail-id">#{{ record.id }}</span>
+            </div>
+            <div>
+                {% if record.statusRequest == 0 %}<span class="badge badge-pending">PENDIENTE</span>
+                {% elseif record.statusRequest == 1 %}<span class="badge badge-accepted">ACEPTADO</span>
+                {% else %}<span class="badge badge-rejected">RECHAZADO</span>{% endif %}
+            </div>
+        </div>
+        <div class="fields-grid">
+            <div class="field-group">
+                <span class="field-label">ID</span>
+                <div class="field-value">{{ record.id }}</div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Fecha</span>
+                <div class="field-value">{{ record.dateRequest ? record.dateRequest|date('d/m/Y H:i') : '—' }}</div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Usuario</span>
+                <div class="field-value">{{ record.userId ? record.userId.username : '—' }}</div>
+            </div>
+            <div class="field-group field-full">
+                <span class="field-label">Descripción</span>
+                <div class="field-value multiline">
+                    {% if record.descriptionRequest %}{{ record.descriptionRequest }}{% else %}<span class="field-empty">Sin descripción</span>{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="detail-actions">
+            <a href="{{ path('app_failrun_admin_panel') }}" class="btn btn-secondary">← Volver al panel</a>
+        </div>
+
+    </div>
+</main>
+
+</body>
+</html>
