@@ -153,9 +153,9 @@ final class FailrunApiController extends AbstractController
         foreach ($games as $game) {
             $data[] = [
                 'id' => $game->getId(),
-                'name' => $game->getName(),
-                'description' => $game->getDescription(),
-                'coverImage' => $game->getCoverImage(),
+                'game_name' => $game->getGameName(),
+                'game_description' => $game->getGameDescription(),
+                'cover_img' => $game->getCoverImg(),
             ];
         }
 
