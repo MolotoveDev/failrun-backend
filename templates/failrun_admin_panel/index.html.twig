@@ -1162,15 +1162,41 @@
                 <input type="hidden" name="id" id="clip-id">
                 <div class="form-group">
                     <label>Título</label>
-                    <input type="text" name="clipTitle" id="clip-clipTitle" required>
+                    <input type="text" name="clip_title" id="clip-clip_title" required>
+                </div>
+                <div class="form-group">
+                    <label>Enlace del Clip</label>
+                    <input type="url" name="clip_link" id="clip-clip_link" required>
                 </div>
                 <div class="form-group">
                     <label>Descripción</label>
-                    <textarea name="clipDescription" id="clip-clipDescription"></textarea>
+                    <textarea name="clip_description" id="clip-clip_description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Fecha del Clip</label>
+                    <input type="date" name="clip_date" id="clip-clip_date" required>
+                </div>
+                <div class="form-group">
+                    <label>Usuario Publicador</label>
+                    <select name="user_id" id="clip-user_id" required>
+                        <option value="">Selecciona un usuario</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Juego Relacionado</label>
+                    <select name="game_id" id="clip-game_id">
+                        <option value="">Selecciona un juego</option>
+                        {% for game in games %}
+                            <option value="{{ game.id }}">{{ game.gameName }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Estado</label>
-                    <select name="clipStatus" id="clip-clipStatus">
+                    <select name="clip_status" id="clip-clip_status" required>
                         <option value="">Selecciona un estado</option>
                         <option value="0">Pendiente</option>
                         <option value="1">Aceptado</option>
