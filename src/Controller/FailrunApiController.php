@@ -14,6 +14,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\User; //Importamos la entidad User
 use App\Entity\UserRequest; //Importamos la entidad UserRequest
 use App\Entity\Games; //Importamos la entidad Game
+use App\Entity\Clips; //Importamos la entidad Clip
 
 final class FailrunApiController extends AbstractController
 {
@@ -144,9 +145,9 @@ final class FailrunApiController extends AbstractController
     }
 
     #[Route('/failrun/api/get-games', name: 'app_failrun_api_get_games', methods: ['GET'])]
-    public function getGames(): JsonResponse
+    public function getGames(EntityManagerInterface $em): JsonResponse
     {
-        $games = $em->getRepository(Game::class)->findAll();
+        $games = $em->getRepository(Games::class)->findAll();
 
         $data = [];
         foreach ($games as $game) {
@@ -155,6 +156,27 @@ final class FailrunApiController extends AbstractController
                 'name' => $game->getName(),
                 'description' => $game->getDescription(),
                 'coverImage' => $game->getCoverImage(),
+            ];
+        }
+
+        return new JsonResponse(['status' => 'success', 'data' => $data], 200);
+    }
+
+    #[Route('/failrun/api/get-game-clips/{gameId}', name: 'app_failrun_api_get_game_clips', methods: ['GET'])]
+    public function getGameClips(int $gameId, EntityManagerInterface $em): JsonResponse
+    {
+        $clips = $em->getRepository(Clips::class)->findBy(['game_id' => $gameId]);
+
+        $data = [];
+        foreach ($clips as $clip) {
+            $data[] = [
+                'user_id' => $clip->getUserId()->getUsername(),
+                'game_id' => $clip->getGameId()->getId(),
+                'clip_title' => $clip->getClipTitle(),
+                'clip_link' => $clip->getClipLink(),
+                'clip_description' => $clip->getClipDescription(),
+                'clip_date' => $clip->getClipDate()->format('Y-m-d H:i:s'),
+                'clip_status' => $clip->getClipStatus(),
             ];
         }
 
