@@ -484,6 +484,85 @@
             gap: 0.5rem;
         }
 
+        /* SEARCHABLE DROPDOWN */
+        .searchable-dropdown {
+            position: relative;
+        }
+
+        .searchable-dropdown-input {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            color: var(--text);
+            font-family: "Montserrat", sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            outline: none;
+            width: 100%;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .searchable-dropdown-input:focus {
+            border-color: var(--red);
+        }
+
+        .searchable-dropdown-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .searchable-dropdown-list {
+            display: none;
+            position: absolute;
+            top: calc(100% + 0.4rem);
+            left: 0;
+            right: 0;
+            background: var(--surface2);
+            border: 1px solid var(--red);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .searchable-dropdown-list.active {
+            display: block;
+        }
+
+        .searchable-dropdown-option {
+            padding: 0.6rem 1rem;
+            color: var(--text);
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+
+        .searchable-dropdown-option:hover {
+            background: rgba(255,45,85,0.15);
+        }
+
+        .searchable-dropdown-option.selected {
+            background: rgba(255,45,85,0.25);
+            color: var(--red);
+        }
+
+        .searchable-dropdown-option:last-child {
+            border-bottom: none;
+        }
+
+        .searchable-dropdown-no-results {
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
         /* RESPONSIVE DESIGN */
         @media (max-width: 1024px) {
             main { padding: 1.5rem; }
@@ -657,10 +736,20 @@
                 margin-bottom: 0.8rem;
             }
             
-            .toast {
-                bottom: 1rem;
-                right: 1rem;
-                left: 1rem;
+            .searchable-dropdown-input {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .searchable-dropdown-list {
+                max-height: 150px;
+            }
+
+            .searchable-dropdown-option {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
                 padding: 0.8rem 1rem;
                 font-size: 0.8rem;
             }
@@ -1443,25 +1532,27 @@
                 </div>
                 <div class="form-group">
                     <label>Usuario Publicador</label>
-                    <select name="user_id" id="clip-user_id" required>
-                        <option value="">Selecciona un usuario</option>
-                        {% for user in users %}
-                            <option value="{{ user.id }}">{{ user.username }}</option>
-                        {% endfor %}
-                    </select>
+                    <input type="hidden" name="user_id" id="clip-user_id" required>
+                    <div class="searchable-dropdown" id="dropdown-user">
+                        <input type="text" class="searchable-dropdown-input" placeholder="Buscar usuario..." id="input-user-search">
+                        <div class="searchable-dropdown-list" id="list-user">
+                            {% for user in users %}
+                                <div class="searchable-dropdown-option" data-value="{{ user.id }}" data-label="{{ user.username }}">{{ user.username }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Juego Relacionado</label>
-                    <select name="game_id" id="clip-game_id">
-                        <option value="">Selecciona un juego</option>
-                        {% for game in games %}
-                            <option value="{{ game.id }}">{{ game.gameName }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" name="clipDate" id="clip-clipDate">
+                    <input type="hidden" name="game_id" id="clip-game_id">
+                    <div class="searchable-dropdown" id="dropdown-game">
+                        <input type="text" class="searchable-dropdown-input" placeholder="Buscar juego..." id="input-game-search">
+                        <div class="searchable-dropdown-list" id="list-game">
+                            {% for game in games %}
+                                <div class="searchable-dropdown-option" data-value="{{ game.id }}" data-label="{{ game.gameName }}">{{ game.gameName }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Estado</label>
@@ -1471,16 +1562,6 @@
                         <option value="1">Aceptado</option>
                         <option value="2">Rechazado</option>
                     </select>
-                </div>
-                <div class="form-group">
-                    <label>ID Usuario</label>
-                    <input type="number" name="userId" id="clip-userId" min="1">
-                    <span class="form-help">ID numérico del usuario propietario del clip.</span>
-                </div>
-                <div class="form-group">
-                    <label>ID Juego</label>
-                    <input type="number" name="gameId" id="clip-gameId" min="1">
-                    <span class="form-help">ID numérico del juego asociado al clip.</span>
                 </div>
             </form>
         </div>
@@ -1806,6 +1887,24 @@
             const form = modal.querySelector('form');
             if (form) form.reset();
             
+            // Limpia y reinicia los dropdowns de búsqueda para clips
+            if (modalId === 'modal-clip-form') {
+                document.getElementById('input-user-search').value = '';
+                document.getElementById('clip-user_id').value = '';
+                document.getElementById('input-game-search').value = '';
+                document.getElementById('clip-game_id').value = '';
+                
+                // Limpia la selección visual
+                document.querySelectorAll('#list-user .searchable-dropdown-option, #list-game .searchable-dropdown-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    opt.style.display = '';
+                });
+                
+                // Cierra las listas
+                document.getElementById('list-user').classList.remove('active');
+                document.getElementById('list-game').classList.remove('active');
+            }
+            
             // Actualiza el título del modal
             const titleEl = modal.querySelector('.modal-header h2');
             if (titleEl) {
@@ -1867,6 +1966,31 @@
                     }
 
                     field.value = data[key] ?? '';
+                }
+
+                // Para clips, actualiza los inputs de búsqueda visibles
+                if (modalId === 'modal-clip-form') {
+                    if (data.user_id) {
+                        const userOption = document.querySelector(`#list-user [data-value="${data.user_id}"]`);
+                        if (userOption) {
+                            document.getElementById('input-user-search').value = userOption.getAttribute('data-label');
+                            document.querySelectorAll('#list-user .searchable-dropdown-option').forEach(opt => {
+                                opt.classList.remove('selected');
+                            });
+                            userOption.classList.add('selected');
+                        }
+                    }
+
+                    if (data.game_id) {
+                        const gameOption = document.querySelector(`#list-game [data-value="${data.game_id}"]`);
+                        if (gameOption) {
+                            document.getElementById('input-game-search').value = gameOption.getAttribute('data-label');
+                            document.querySelectorAll('#list-game .searchable-dropdown-option').forEach(opt => {
+                                opt.classList.remove('selected');
+                            });
+                            gameOption.classList.add('selected');
+                        }
+                    }
                 }
 
                 openModal(modalId, 'edit');
@@ -2019,6 +2143,94 @@
             })
             .catch(() => showToast('Error al cargar los detalles', 'error'));
     }
+
+    /**
+     * Inicializa los dropdowns de búsqueda para usuarios y juegos
+     */
+    function initSearchableDropdowns() {
+        initSearchableDropdown('user', 'Usuario');
+        initSearchableDropdown('game', 'Juego');
+    }
+
+    /**
+     * Inicializa un dropdown searchable individual
+     * @param {string} type - Tipo: 'user' o 'game'
+     * @param {string} label - Etiqueta para mostrar en el input
+     */
+    function initSearchableDropdown(type, label) {
+        const input = document.getElementById(`input-${type}-search`);
+        const list = document.getElementById(`list-${type}`);
+        const hidden = document.getElementById(`clip-${type}_id`);
+
+        if (!input || !list) return;
+
+        // Abre/cierra la lista al hacer click en el input
+        input.addEventListener('click', () => {
+            list.classList.toggle('active');
+        });
+
+        // Filtra las opciones mientras se escribe
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const options = list.querySelectorAll('.searchable-dropdown-option');
+            let hasVisibleOptions = false;
+
+            options.forEach(option => {
+                const label = option.getAttribute('data-label').toLowerCase();
+                const matches = label.includes(query);
+                option.style.display = matches ? '' : 'none';
+                if (matches) hasVisibleOptions = true;
+            });
+
+            // Muestra mensaje si no hay resultados
+            let noResults = list.querySelector('.searchable-dropdown-no-results');
+            if (!hasVisibleOptions) {
+                if (!noResults) {
+                    noResults = document.createElement('div');
+                    noResults.className = 'searchable-dropdown-no-results';
+                    noResults.textContent = 'Sin resultados';
+                    list.appendChild(noResults);
+                }
+            } else {
+                if (noResults) noResults.remove();
+            }
+
+            list.classList.add('active');
+        });
+
+        // Selecciona una opción al hacer click
+        list.addEventListener('click', (e) => {
+            if (e.target.classList.contains('searchable-dropdown-option')) {
+                const value = e.target.getAttribute('data-value');
+                const label = e.target.getAttribute('data-label');
+
+                // Actualiza el campo oculto
+                hidden.value = value;
+
+                // Actualiza el input visible
+                input.value = label;
+
+                // Marca la opción como seleccionada
+                list.querySelectorAll('.searchable-dropdown-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                e.target.classList.add('selected');
+
+                // Cierra la lista
+                list.classList.remove('active');
+            }
+        });
+
+        // Cierra la lista al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest(`#dropdown-${type}`)) {
+                list.classList.remove('active');
+            }
+        });
+    }
+
+    // Inicializa dropdowns al cargar la página
+    initSearchableDropdowns();
 
     // Cierra modales al hacer clic fuera de ellos
     document.querySelectorAll('.modal').forEach(modal => {
