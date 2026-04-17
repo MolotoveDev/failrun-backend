@@ -128,7 +128,7 @@ final class FailrunApiController extends AbstractController
     public function getUserRequests(Security $security, EntityManagerInterface $em): JsonResponse
     {
         $user = $security->getUser();
-        $requests = $em->getRepository(UserRequest::class)->findBy(['userId' => $user]);
+        $requests = $em->getRepository(UserRequest::class)->findBy(['user_id' => $user]);
 
         $data = [];
         foreach ($requests as $request) {
@@ -165,7 +165,7 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/get-game-clips/{gameId}', name: 'app_failrun_api_get_game_clips', methods: ['GET'])]
     public function getGameClips(int $gameId, EntityManagerInterface $em): JsonResponse
     {
-        $clips = $em->getRepository(Clips::class)->findBy(['game_id' => $gameId]);
+        $clips = $em->getRepository(Clips::class)->findBy(['game_id' => $gameId, 'clip_status' => 1]);
 
         $data = [];
         foreach ($clips as $clip) {
