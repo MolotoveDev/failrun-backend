@@ -215,6 +215,28 @@ final class FailrunAdminPanelController extends AbstractController
                 if ($key !== 'id') {
                     $setter = 'set' . str_replace('_', '', ucwords($key, '_'));
                     if (method_exists($record, $setter)) {
+                        // Usa reflexión para detectar el tipo esperado por el setter
+                        $refMethod = new \ReflectionMethod($record, $setter);
+                        $params    = $refMethod->getParameters();
+                        if (!empty($params[0])) {
+                            $type = $params[0]->getType();
+                            if ($type instanceof \ReflectionNamedType) {
+                                $typeName = $type->getName();
+
+                                // Fecha: convierte string 'YYYY-MM-DD' → DateTime
+                                if (in_array($typeName, [\DateTime::class, \DateTimeInterface::class, \DateTimeImmutable::class])) {
+                                    if ($value !== '' && $value !== null) {
+                                        $value = new \DateTime((string) $value);
+                                    } else {
+                                        $value = null;
+                                    }
+                                }
+                                // Relación: convierte ID entero → entidad
+                                elseif (!$type->isBuiltin() && $value !== '' && $value !== null) {
+                                    $value = $em->getRepository($typeName)->find((int) $value) ?? null;
+                                }
+                            }
+                        }
                         $record->$setter($value);
                     }
                 }
@@ -345,6 +367,8 @@ final class FailrunAdminPanelController extends AbstractController
 
     /**
      * Convierte una entidad a array usando reflexión.
+     * - Objetos DateTime → string 'Y-m-d' (compatible con <input type="date">)
+     * - Entidades relacionadas → su ID entero
      */
     private function entityToArray(object $entity): array
     {
@@ -356,7 +380,10 @@ final class FailrunAdminPanelController extends AbstractController
             $value = $property->getValue($entity);
             $propertyName = $property->getName();
 
-            if (is_object($value) && method_exists($value, 'getId')) {
+            if ($value instanceof \DateTimeInterface) {
+                // Devuelve YYYY-MM-DD para que funcione con <input type="date">
+                $result[$propertyName] = $value->format('Y-m-d');
+            } elseif (is_object($value) && method_exists($value, 'getId')) {
                 $result[$propertyName] = $value->getId();
             } else {
                 $result[$propertyName] = $value;
