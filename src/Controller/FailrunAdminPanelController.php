@@ -28,23 +28,15 @@ final class FailrunAdminPanelController extends AbstractController
 {
     /**
      * Página de login para administradores
-     * 
-     * Redirige automáticamente al panel si el usuario ya está autenticado como admin.
-     * 
-     * @param AuthenticationUtils $authenticationUtils Servicio para obtener errores de autenticación
-     * @return Response Vista de login o redirección al panel
      */
     #[Route('/failrun/admin/login', name: 'app_failrun_admin_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // Si ya es admin, redirige al panel
         if ($this->isGranted('ROLE_ADMIN')) {
             return $this->redirectToRoute('app_failrun_admin_panel');
         }
 
-        // Obtiene el último error de autenticación (si lo hay)
         $error = $authenticationUtils->getLastAuthenticationError();
-        // Obtiene el último usuario introducido en el formulario
         $lastUsername = $authenticationUtils->getLastUsername();
 
         return $this->render('failrun_admin_panel/login.html.twig', [
@@ -55,20 +47,12 @@ final class FailrunAdminPanelController extends AbstractController
 
     /**
      * Panel principal del administrador
-     * 
-     * Carga todas las entidades del sistema y las muestra en vistas tabulares
-     * con funcionalidades de búsqueda, filtrado y ordenamiento.
-     * 
-     * @param EntityManagerInterface $em Manager de Doctrine para acceder a repositorios
-     * @return Response Vista del panel con todos los datos
      */
     #[Route('/failrun/admin/panel', name: 'app_failrun_admin_panel')]
     public function index(EntityManagerInterface $em): Response
     {
-        // Verifica que el usuario tenga permisos de administrador
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Obtiene todos los registros de cada entidad
         return $this->render('failrun_admin_panel/index.html.twig', [
             'users'         => $em->getRepository(User::class)->findAll(),
             'clips'         => $em->getRepository(Clips::class)->findAll(),
@@ -81,23 +65,60 @@ final class FailrunAdminPanelController extends AbstractController
     }
 
     /**
-     * Obtiene un registro específico en formato JSON
+     * Vista de detalle de un registro en página completa.
+     * 
+     * Disponible para: clips, games, marks, mark_types, user_rates, user_requests.
+     * NO disponible para users (redirige al panel).
+     * 
+     * Ruta: /failrun/admin/entity/{entity}/{id}/view
+     * IMPORTANTE: esta ruta debe declararse ANTES de app_failrun_admin_get_entity
+     * para que Symfony no confunda "/view" con un {id} entero.
+     */
+    #[Route('/failrun/admin/entity/{entity}/{id}/view', name: 'app_failrun_admin_view_entity')]
+    public function viewEntityPage(string $entity, int $id, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        // Los usuarios no tienen vista de detalle
+        if ($entity === 'users') {
+            return $this->redirectToRoute('app_failrun_admin_panel');
+        }
+
+        $entityMap = [
+            'clips'         => Clips::class,
+            'games'         => Games::class,
+            'marks'         => Mark::class,
+            'mark_types'    => MarkType::class,
+            'user_rates'    => UserRate::class,
+            'user_requests' => UserRequest::class,
+        ];
+
+        if (!isset($entityMap[$entity])) {
+            throw $this->createNotFoundException('Entidad no válida: ' . $entity);
+        }
+
+        $record = $em->getRepository($entityMap[$entity])->find($id);
+
+        if (!$record) {
+            throw $this->createNotFoundException('Registro no encontrado con ID: ' . $id);
+        }
+
+        return $this->render('failrun_admin_panel/view.html.twig', [
+            'entity' => $entity,
+            'record' => $record,
+        ]);
+    }
+
+    /**
+     * Obtiene un registro específico en formato JSON.
      * 
      * Ruta: /failrun/admin/entity/{entity}/{id}
-     * Ejemplo: /failrun/admin/entity/users/5
-     * 
-     * @param string $entity Nombre de la entidad (users, clips, games, etc.)
-     * @param int $id ID del registro a obtener
-     * @param EntityManagerInterface $em Manager de Doctrine
-     * @return JsonResponse Datos del registro en JSON
      */
     #[Route('/failrun/admin/entity/{entity}/{id}', name: 'app_failrun_admin_get_entity', methods: ['GET'])]
     public function getEntity(string $entity, int $id, EntityManagerInterface $em): JsonResponse
     {
-        // Verifica permisos de admin
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Mapea nombres de entidades a clases
         $entityMap = [
             'users'         => User::class,
             'clips'         => Clips::class,
@@ -108,12 +129,10 @@ final class FailrunAdminPanelController extends AbstractController
             'user_requests' => UserRequest::class,
         ];
 
-        // Valida que la entidad exista
         if (!isset($entityMap[$entity])) {
             return $this->json(['error' => 'Entidad no válida'], 400);
         }
 
-        // Obtiene el registro
         $record = $em->getRepository($entityMap[$entity])->find($id);
 
         if (!$record) {
@@ -131,29 +150,21 @@ final class FailrunAdminPanelController extends AbstractController
             }
 
             return $this->json([
-                'id' => $record->getId(),
-                'username' => $record->getUsername(),
-                'email' => $record->getEmail(),
+                'id'         => $record->getId(),
+                'username'   => $record->getUsername(),
+                'email'      => $record->getEmail(),
                 'profilePic' => $record->getProfilePic(),
-                'role' => $role,
+                'role'       => $role,
             ]);
         }
 
-        // Convierte el objeto a array (simplificado para entidades básicas)
         return $this->json($this->entityToArray($record));
     }
 
     /**
-     * Crea o actualiza un registro
+     * Crea o actualiza un registro.
      * 
-     * Ruta: /failrun/admin/entity/{entity}
-     * POST: Crear nuevo
-     * PUT: Actualizar existente (requiere 'id' en el body)
-     * 
-     * @param string $entity Nombre de la entidad
-     * @param Request $request Contiene los datos del formulario
-     * @param EntityManagerInterface $em Manager de Doctrine
-     * @return JsonResponse Respuesta con el resultado de la operación
+     * POST: Crear nuevo  |  PUT: Actualizar existente (requiere 'id' en el body)
      */
     #[Route('/failrun/admin/entity/{entity}', name: 'app_failrun_admin_save_entity', methods: ['POST', 'PUT'])]
     public function saveEntity(
@@ -161,12 +172,9 @@ final class FailrunAdminPanelController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher
-    ): JsonResponse
-    {
-        // Verifica permisos de admin
+    ): JsonResponse {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Mapea nombres de entidades a clases
         $entityMap = [
             'users'         => User::class,
             'clips'         => Clips::class,
@@ -177,12 +185,10 @@ final class FailrunAdminPanelController extends AbstractController
             'user_requests' => UserRequest::class,
         ];
 
-        // Valida que la entidad exista
         if (!isset($entityMap[$entity])) {
             return $this->json(['error' => 'Entidad no válida'], 400);
         }
 
-        // Obtiene los datos del request (JSON o form data)
         $data = json_decode($request->getContent(), true);
         if (!is_array($data)) {
             $data = $request->request->all();
@@ -193,47 +199,60 @@ final class FailrunAdminPanelController extends AbstractController
         }
 
         try {
-            // Determina si es una actualización o creación
             $isUpdate = isset($data['id']) && !empty($data['id']);
             $className = $entityMap[$entity];
 
             if ($isUpdate) {
-                // Obtiene el registro existente
                 $record = $em->getRepository($className)->find($data['id']);
                 if (!$record) {
                     return $this->json(['error' => 'Registro no encontrado'], 404);
                 }
             } else {
-                // Crea una nueva instancia
                 $record = new $className();
             }
 
-            // Asigna los datos al objeto (método genérico simple)
             foreach ($data as $key => $value) {
                 if ($key !== 'id') {
-                    // Convierte nombres camelCase a setters (ej: 'userName' -> 'setUserName')
                     $setter = 'set' . str_replace('_', '', ucwords($key, '_'));
                     if (method_exists($record, $setter)) {
+                        // Usa reflexión para detectar el tipo esperado por el setter
+                        $refMethod = new \ReflectionMethod($record, $setter);
+                        $params    = $refMethod->getParameters();
+                        if (!empty($params[0])) {
+                            $type = $params[0]->getType();
+                            if ($type instanceof \ReflectionNamedType) {
+                                $typeName = $type->getName();
+
+                                // Fecha: convierte string 'YYYY-MM-DD' → DateTime
+                                if (in_array($typeName, [\DateTime::class, \DateTimeInterface::class, \DateTimeImmutable::class])) {
+                                    if ($value !== '' && $value !== null) {
+                                        $value = new \DateTime((string) $value);
+                                    } else {
+                                        $value = null;
+                                    }
+                                }
+                                // Relación: convierte ID entero → entidad
+                                elseif (!$type->isBuiltin() && $value !== '' && $value !== null) {
+                                    $value = $em->getRepository($typeName)->find((int) $value) ?? null;
+                                }
+                            }
+                        }
                         $record->$setter($value);
                     }
                 }
             }
 
-            // Persiste el registro
             $em->persist($record);
             $em->flush();
 
             return $this->json([
                 'success' => true,
                 'message' => $isUpdate ? 'Registro actualizado correctamente' : 'Registro creado correctamente',
-                'id' => $record->getId() ?? null
+                'id'      => $record->getId() ?? null,
             ]);
 
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -258,7 +277,6 @@ final class FailrunAdminPanelController extends AbstractController
                 $user->setRegisterDate(new \DateTime());
             }
 
-            // Valida campos obligatorios en creación
             if (!$isUpdate) {
                 if (empty($data['username'])) {
                     return $this->json(['success' => false, 'error' => 'El username es obligatorio'], 400);
@@ -271,18 +289,10 @@ final class FailrunAdminPanelController extends AbstractController
                 }
             }
 
-            // Asigna campos básicos si vienen en el payload
-            if (!empty($data['username'])) {
-                $user->setUsername($data['username']);
-            }
-            if (!empty($data['email'])) {
-                $user->setEmail($data['email']);
-            }
-            if (isset($data['profilePic'])) {
-                $user->setProfilePic($data['profilePic']);
-            }
+            if (!empty($data['username']))  $user->setUsername($data['username']);
+            if (!empty($data['email']))     $user->setEmail($data['email']);
+            if (isset($data['profilePic'])) $user->setProfilePic($data['profilePic']);
 
-            // Asigna el rol
             $role = $data['role'] ?? 'ROLE_USER';
             if ($role === 'ROLE_ADMIN') {
                 $user->setRoles(['ROLE_ADMIN']);
@@ -292,7 +302,6 @@ final class FailrunAdminPanelController extends AbstractController
                 $user->setRoles([]);
             }
 
-            // Hashea la contraseña solo si se ha enviado una nueva
             $plainPassword = $data['plainPassword'] ?? '';
             if ($plainPassword !== '') {
                 $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
@@ -304,34 +313,21 @@ final class FailrunAdminPanelController extends AbstractController
             return $this->json([
                 'success' => true,
                 'message' => $isUpdate ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente',
-                'id' => $user->getId(),
+                'id'      => $user->getId(),
             ]);
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Elimina un registro
-     * 
-     * Ruta: /failrun/admin/entity/{entity}/{id}
-     * DELETE: Elimina el registro con ese ID
-     * 
-     * @param string $entity Nombre de la entidad
-     * @param int $id ID del registro a eliminar
-     * @param EntityManagerInterface $em Manager de Doctrine
-     * @return JsonResponse Respuesta con el resultado de la operación
+     * Elimina un registro.
      */
     #[Route('/failrun/admin/entity/{entity}/{id}', name: 'app_failrun_admin_delete_entity', methods: ['DELETE'])]
     public function deleteEntity(string $entity, int $id, EntityManagerInterface $em): JsonResponse
     {
-        // Verifica permisos de admin
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Mapea nombres de entidades a clases
         $entityMap = [
             'users'         => User::class,
             'clips'         => Clips::class,
@@ -342,67 +338,52 @@ final class FailrunAdminPanelController extends AbstractController
             'user_requests' => UserRequest::class,
         ];
 
-        // Valida que la entidad exista
         if (!isset($entityMap[$entity])) {
             return $this->json(['error' => 'Entidad no válida'], 400);
         }
 
         try {
-            // Obtiene el registro
             $record = $em->getRepository($entityMap[$entity])->find($id);
 
             if (!$record) {
                 return $this->json(['error' => 'Registro no encontrado'], 404);
             }
 
-            // Elimina el registro
             $em->remove($record);
             $em->flush();
 
-            return $this->json([
-                'success' => true,
-                'message' => 'Registro eliminado correctamente'
-            ]);
+            return $this->json(['success' => true, 'message' => 'Registro eliminado correctamente']);
 
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Cierra la sesión del administrador
-     * 
-     * Symfony maneja automáticamente la eliminación de la sesión.
+     * Cierra la sesión del administrador.
      */
     #[Route('/failrun/admin/logout', name: 'app_failrun_admin_logout')]
     public function logout(): void {}
 
     /**
-     * Método auxiliar para convertir una entidad a array
-     * 
-     * Utiliza reflexión para obtener las propiedades públicas y sus getters.
-     * 
-     * @param object $entity Objeto entidad a convertir
-     * @return array Array con los datos de la entidad
+     * Convierte una entidad a array usando reflexión.
+     * - Objetos DateTime → string 'Y-m-d' (compatible con <input type="date">)
+     * - Entidades relacionadas → su ID entero
      */
     private function entityToArray(object $entity): array
     {
         $result = [];
         $reflection = new \ReflectionClass($entity);
 
-        // Obtiene todas las propiedades de la entidad
         foreach ($reflection->getProperties() as $property) {
             $property->setAccessible(true);
             $value = $property->getValue($entity);
-
-            // Obtiene el nombre de la propiedad
             $propertyName = $property->getName();
 
-            // Si el valor es un objeto, obtiene su ID o string
-            if (is_object($value) && method_exists($value, 'getId')) {
+            if ($value instanceof \DateTimeInterface) {
+                // Devuelve YYYY-MM-DD para que funcione con <input type="date">
+                $result[$propertyName] = $value->format('Y-m-d');
+            } elseif (is_object($value) && method_exists($value, 'getId')) {
                 $result[$propertyName] = $value->getId();
             } else {
                 $result[$propertyName] = $value;

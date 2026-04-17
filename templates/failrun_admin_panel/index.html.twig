@@ -248,6 +248,18 @@
             white-space: nowrap;
         }
 
+        .btn-view {
+            background: rgba(10,132,255,0.15);
+            color: #0A84FF;
+            border: 1px solid rgba(10,132,255,0.3);
+            text-decoration: none;
+        }
+
+        .btn-view:hover {
+            background: rgba(10,132,255,0.25);
+            border-color: #0A84FF;
+        }
+
         .btn-edit {
             background: rgba(52,199,89,0.15);
             color: #34C759;
@@ -486,14 +498,19 @@
         <div class="table-wrapper">
             <button class="btn btn-add" onclick="openModal('modal-user-form', 'new')">+ Añadir Usuario</button>
             <div class="table-toolbar">
-                <input class="search-input" type="text" placeholder="Buscar..." oninput="filterTable('users-table', this.value, document.getElementById('users-col').value)">
-                <select class="filter-select" id="users-col">
+                <input class="search-input" type="text" id="users-search" placeholder="Buscar..." oninput="filterUsersTable()">
+                <select class="filter-select" id="users-col" onchange="filterUsersTable()">
                     <option value="">Todas las columnas</option>
                     <option value="0">ID</option>
                     <option value="1">Username</option>
                     <option value="2">Email</option>
-                    <option value="3">Rol</option>
                     <option value="4">Fecha registro</option>
+                </select>
+                <select class="filter-select" id="users-role-filter" onchange="filterUsersTable()">
+                    <option value="">Todos los roles</option>
+                    <option value="ADMIN">Administrador</option>
+                    <option value="MODERATOR">Moderador</option>
+                    <option value="USER">Usuario</option>
                 </select>
                 <span class="row-count" id="users-count">{{ users|length }} registros</span>
             </div>
@@ -512,7 +529,7 @@
                     </thead>
                     <tbody>
                         {% for user in users %}
-                        <tr>
+                        <tr data-role="{{ 'ROLE_ADMIN' in user.roles ? 'ADMIN' : ('ROLE_MODERATOR' in user.roles ? 'MODERATOR' : 'USER') }}">
                             <td>{{ user.id }}</td>
                             <td>{{ user.username }}</td>
                             <td>{{ user.email }}</td>
@@ -591,7 +608,7 @@
                             <td>{{ clip.gameId ? clip.gameId.gameName : '—' }}</td>
                             <td>
                                 <div class="action-cell">
-                                    <button class="btn btn-edit" onclick="viewDetails('clips', {{ clip.id }}, 'modal-clip-view')">Ver</button>
+                                    <a class="btn btn-view" href="{{ path('app_failrun_admin_view_entity', {entity: 'clips', id: clip.id}) }}">Ver</a>
                                     <button class="btn btn-edit" onclick="editEntity('clips', {{ clip.id }}, 'modal-clip-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('clips', {{ clip.id }}, 'clips-table')">Eliminar</button>
                                 </div>
@@ -639,7 +656,7 @@
                             <td>{{ game.coverImg ?? '—' }}</td>
                             <td>
                                 <div class="action-cell">
-                                    <button class="btn btn-edit" onclick="viewDetails('games', {{ game.id }}, 'modal-game-view')">Ver</button>
+                                    <a class="btn btn-view" href="{{ path('app_failrun_admin_view_entity', {entity: 'games', id: game.id}) }}">Ver</a>
                                     <button class="btn btn-edit" onclick="editEntity('games', {{ game.id }}, 'modal-game-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('games', {{ game.id }}, 'games-table')">Eliminar</button>
                                 </div>
@@ -689,7 +706,7 @@
                             <td>{{ mark.idMarkType ? mark.idMarkType.markName : '—' }}</td>
                             <td>
                                 <div class="action-cell">
-                                    <button class="btn btn-edit" onclick="viewDetails('marks', {{ mark.id }}, 'modal-mark-view')">Ver</button>
+                                    <a class="btn btn-view" href="{{ path('app_failrun_admin_view_entity', {entity: 'marks', id: mark.id}) }}">Ver</a>
                                     <button class="btn btn-edit" onclick="editEntity('marks', {{ mark.id }}, 'modal-mark-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('marks', {{ mark.id }}, 'marks-table')">Eliminar</button>
                                 </div>
@@ -737,7 +754,7 @@
                             <td>{{ mt.markLogoUrl ?? '—' }}</td>
                             <td>
                                 <div class="action-cell">
-                                    <button class="btn btn-edit" onclick="viewDetails('mark_types', {{ mt.id }}, 'modal-mark-type-view')">Ver</button>
+                                    <a class="btn btn-view" href="{{ path('app_failrun_admin_view_entity', {entity: 'mark_types', id: mt.id}) }}">Ver</a>
                                     <button class="btn btn-edit" onclick="editEntity('mark_types', {{ mt.id }}, 'modal-mark-type-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('mark_types', {{ mt.id }}, 'mark-types-table')">Eliminar</button>
                                 </div>
@@ -789,7 +806,7 @@
                             <td>{{ rate.clipId ? rate.clipId.clipTitle : '—' }}</td>
                             <td>
                                 <div class="action-cell">
-                                    <button class="btn btn-edit" onclick="viewDetails('user_rates', {{ rate.id }}, 'modal-user-rate-view')">Ver</button>
+                                    <a class="btn btn-view" href="{{ path('app_failrun_admin_view_entity', {entity: 'user_rates', id: rate.id}) }}">Ver</a>
                                     <button class="btn btn-edit" onclick="editEntity('user_rates', {{ rate.id }}, 'modal-user-rate-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('user_rates', {{ rate.id }}, 'user-rates-table')">Eliminar</button>
                                 </div>
@@ -850,7 +867,7 @@
                             <td>{{ req.userId ? req.userId.username : '—' }}</td>
                             <td>
                                 <div class="action-cell">
-                                    <button class="btn btn-edit" onclick="viewDetails('user_requests', {{ req.id }}, 'modal-user-request-view')">Ver</button>
+                                    <a class="btn btn-view" href="{{ path('app_failrun_admin_view_entity', {entity: 'user_requests', id: req.id}) }}">Ver</a>
                                     <button class="btn btn-edit" onclick="editEntity('user_requests', {{ req.id }}, 'modal-user-request-form')">Editar</button>
                                     <button class="btn btn-delete" onclick="deleteEntity('user_requests', {{ req.id }}, 'user-requests-table')">Eliminar</button>
                                 </div>
@@ -1152,6 +1169,10 @@
                     <textarea name="clipDescription" id="clip-clipDescription"></textarea>
                 </div>
                 <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" name="clipDate" id="clip-clipDate">
+                </div>
+                <div class="form-group">
                     <label>Estado</label>
                     <select name="clipStatus" id="clip-clipStatus">
                         <option value="">Selecciona un estado</option>
@@ -1159,6 +1180,16 @@
                         <option value="1">Aceptado</option>
                         <option value="2">Rechazado</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>ID Usuario</label>
+                    <input type="number" name="userId" id="clip-userId" min="1">
+                    <span class="form-help">ID numérico del usuario propietario del clip.</span>
+                </div>
+                <div class="form-group">
+                    <label>ID Juego</label>
+                    <input type="number" name="gameId" id="clip-gameId" min="1">
+                    <span class="form-help">ID numérico del juego asociado al clip.</span>
                 </div>
             </form>
         </div>
@@ -1213,6 +1244,20 @@
                 <div class="form-group">
                     <label>Valoración</label>
                     <input type="number" name="markRate" id="mark-markRate" required>
+                </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" name="markDate" id="mark-markDate">
+                </div>
+                <div class="form-group">
+                    <label>ID Clip</label>
+                    <input type="number" name="clipId" id="mark-clipId" min="1">
+                    <span class="form-help">ID numérico del clip al que pertenece esta marca.</span>
+                </div>
+                <div class="form-group">
+                    <label>ID Tipo de Marca</label>
+                    <input type="number" name="idMarkType" id="mark-idMarkType" min="1">
+                    <span class="form-help">ID numérico del tipo de marca.</span>
                 </div>
             </form>
         </div>
@@ -1272,6 +1317,20 @@
                     <label>Comentario</label>
                     <textarea name="userComment" id="user-rate-userComment"></textarea>
                 </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" name="rateDate" id="user-rate-rateDate">
+                </div>
+                <div class="form-group">
+                    <label>ID Usuario</label>
+                    <input type="number" name="userId" id="user-rate-userId" min="1">
+                    <span class="form-help">ID numérico del usuario que hace la valoración.</span>
+                </div>
+                <div class="form-group">
+                    <label>ID Clip</label>
+                    <input type="number" name="clipId" id="user-rate-clipId" min="1">
+                    <span class="form-help">ID numérico del clip valorado.</span>
+                </div>
             </form>
         </div>
         <div class="modal-footer">
@@ -1300,6 +1359,10 @@
                     <textarea name="descriptionRequest" id="user-request-descriptionRequest" required></textarea>
                 </div>
                 <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" name="dateRequest" id="user-request-dateRequest">
+                </div>
+                <div class="form-group">
                     <label>Estado</label>
                     <select name="statusRequest" id="user-request-statusRequest" required>
                         <option value="">Selecciona un estado</option>
@@ -1307,6 +1370,11 @@
                         <option value="1">Aceptado</option>
                         <option value="2">Rechazado</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>ID Usuario</label>
+                    <input type="number" name="userId" id="user-request-userId" min="1">
+                    <span class="form-help">ID numérico del usuario que realiza la solicitud.</span>
                 </div>
             </form>
         </div>
@@ -1330,6 +1398,44 @@
         // Muestra la pestaña seleccionada y marca el botón como activo
         document.getElementById('tab-' + name).classList.add('active');
         event.target.classList.add('active');
+    }
+
+    /**
+     * Filtra la tabla de usuarios combinando búsqueda de texto y filtro de rol
+     */
+    function filterUsersTable() {
+        const query = document.getElementById('users-search').value.toLowerCase();
+        const colIndex = document.getElementById('users-col').value;
+        const roleFilter = document.getElementById('users-role-filter').value;
+
+        const table = document.getElementById('users-table');
+        const rows = table.querySelectorAll('tbody tr');
+        let visible = 0;
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const rowRole = row.getAttribute('data-role') || '';
+
+            // Filtro de texto
+            let textMatch = true;
+            if (query) {
+                if (colIndex === '' || colIndex === undefined) {
+                    textMatch = Array.from(cells).some(td => td.textContent.toLowerCase().includes(query));
+                } else {
+                    textMatch = cells[parseInt(colIndex)]?.textContent.toLowerCase().includes(query) ?? false;
+                }
+            }
+
+            // Filtro de rol
+            const roleMatch = roleFilter === '' || rowRole === roleFilter;
+
+            const show = textMatch && roleMatch;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        const countEl = document.getElementById('users-count');
+        if (countEl) countEl.textContent = visible + ' registros';
     }
 
     /**
