@@ -1169,6 +1169,10 @@
                     <textarea name="clipDescription" id="clip-clipDescription"></textarea>
                 </div>
                 <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" name="clipDate" id="clip-clipDate">
+                </div>
+                <div class="form-group">
                     <label>Estado</label>
                     <select name="clipStatus" id="clip-clipStatus">
                         <option value="">Selecciona un estado</option>
@@ -1176,6 +1180,16 @@
                         <option value="1">Aceptado</option>
                         <option value="2">Rechazado</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>ID Usuario</label>
+                    <input type="number" name="userId" id="clip-userId" min="1">
+                    <span class="form-help">ID numérico del usuario propietario del clip.</span>
+                </div>
+                <div class="form-group">
+                    <label>ID Juego</label>
+                    <input type="number" name="gameId" id="clip-gameId" min="1">
+                    <span class="form-help">ID numérico del juego asociado al clip.</span>
                 </div>
             </form>
         </div>
@@ -1230,6 +1244,20 @@
                 <div class="form-group">
                     <label>Valoración</label>
                     <input type="number" name="markRate" id="mark-markRate" required>
+                </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" name="markDate" id="mark-markDate">
+                </div>
+                <div class="form-group">
+                    <label>ID Clip</label>
+                    <input type="number" name="clipId" id="mark-clipId" min="1">
+                    <span class="form-help">ID numérico del clip al que pertenece esta marca.</span>
+                </div>
+                <div class="form-group">
+                    <label>ID Tipo de Marca</label>
+                    <input type="number" name="idMarkType" id="mark-idMarkType" min="1">
+                    <span class="form-help">ID numérico del tipo de marca.</span>
                 </div>
             </form>
         </div>
@@ -1289,6 +1317,20 @@
                     <label>Comentario</label>
                     <textarea name="userComment" id="user-rate-userComment"></textarea>
                 </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" name="rateDate" id="user-rate-rateDate">
+                </div>
+                <div class="form-group">
+                    <label>ID Usuario</label>
+                    <input type="number" name="userId" id="user-rate-userId" min="1">
+                    <span class="form-help">ID numérico del usuario que hace la valoración.</span>
+                </div>
+                <div class="form-group">
+                    <label>ID Clip</label>
+                    <input type="number" name="clipId" id="user-rate-clipId" min="1">
+                    <span class="form-help">ID numérico del clip valorado.</span>
+                </div>
             </form>
         </div>
         <div class="modal-footer">
@@ -1317,6 +1359,10 @@
                     <textarea name="descriptionRequest" id="user-request-descriptionRequest" required></textarea>
                 </div>
                 <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" name="dateRequest" id="user-request-dateRequest">
+                </div>
+                <div class="form-group">
                     <label>Estado</label>
                     <select name="statusRequest" id="user-request-statusRequest" required>
                         <option value="">Selecciona un estado</option>
@@ -1324,6 +1370,11 @@
                         <option value="1">Aceptado</option>
                         <option value="2">Rechazado</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>ID Usuario</label>
+                    <input type="number" name="userId" id="user-request-userId" min="1">
+                    <span class="form-help">ID numérico del usuario que realiza la solicitud.</span>
                 </div>
             </form>
         </div>
