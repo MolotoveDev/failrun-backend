@@ -342,11 +342,15 @@
         .modal-content {
             background: var(--surface);
             border-radius: 16px;
-            padding: 2rem;
+            padding: 0;
             width: 90%;
             max-width: 500px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             animation: slideInModal 0.2s;
+            overflow: hidden;
         }
 
         @keyframes slideInModal {
@@ -358,9 +362,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 1rem;
+            padding: 2rem 2rem 1rem 2rem;
+            flex-shrink: 0;
         }
 
         .modal-header h2 {
@@ -384,7 +388,10 @@
         }
 
         .modal-body {
-            margin-bottom: 1.5rem;
+            padding: 0 2rem;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
         }
 
         .form-group {
@@ -437,6 +444,9 @@
             display: flex;
             gap: 0.8rem;
             justify-content: flex-end;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
         }
 
         /* TOAST DE NOTIFICACIÓN */
@@ -472,6 +482,350 @@
         .action-cell {
             display: flex;
             gap: 0.5rem;
+        }
+
+        /* SEARCHABLE DROPDOWN */
+        .searchable-dropdown {
+            position: relative;
+        }
+
+        .searchable-dropdown-input {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            color: var(--text);
+            font-family: "Montserrat", sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            outline: none;
+            width: 100%;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .searchable-dropdown-input:focus {
+            border-color: var(--red);
+        }
+
+        .searchable-dropdown-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .searchable-dropdown-list {
+            display: none;
+            position: absolute;
+            top: calc(100% + 0.4rem);
+            left: 0;
+            right: 0;
+            background: var(--surface2);
+            border: 1px solid var(--red);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .searchable-dropdown-list.active {
+            display: block;
+        }
+
+        .searchable-dropdown-option {
+            padding: 0.6rem 1rem;
+            color: var(--text);
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+
+        .searchable-dropdown-option:hover {
+            background: rgba(255,45,85,0.15);
+        }
+
+        .searchable-dropdown-option.selected {
+            background: rgba(255,45,85,0.25);
+            color: var(--red);
+        }
+
+        .searchable-dropdown-option:last-child {
+            border-bottom: none;
+        }
+
+        .searchable-dropdown-no-results {
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 1024px) {
+            main { padding: 1.5rem; }
+            
+            .table-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.8rem;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .filter-select {
+                width: 100%;
+            }
+            
+            .row-count {
+                margin-left: 0;
+                text-align: center;
+            }
+            
+            .data-table tbody td {
+                max-width: 150px;
+                font-size: 0.75rem;
+                padding: 0.5rem;
+            }
+            
+            .data-table thead th {
+                padding: 0.5rem;
+                font-size: 0.65rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                max-height: 90vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 1rem;
+                height: 50px;
+            }
+            
+            .nav-brand {
+                font-size: 1.1rem;
+            }
+            
+            .nav-brand span {
+                display: none;
+            }
+            
+            .nav-logout {
+                padding: 0.3rem 0.8rem;
+                font-size: 0.7rem;
+            }
+            
+            main {
+                padding: 1rem;
+            }
+            
+            .tabs {
+                gap: 0.3rem;
+                margin-bottom: 1rem;
+            }
+            
+            .tab-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.65rem;
+                letter-spacing: 0.5px;
+                flex: 1;
+                min-width: 60px;
+                text-align: center;
+            }
+            
+            .table-wrapper {
+                padding: 1rem;
+                border-radius: 12px;
+            }
+            
+            .btn-add {
+                width: 100%;
+                margin-bottom: 0.8rem;
+                justify-content: center;
+            }
+            
+            .table-toolbar {
+                flex-direction: column;
+                gap: 0.6rem;
+                margin-bottom: 1rem;
+            }
+            
+            .search-input {
+                width: 100%;
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            .filter-select {
+                width: 100%;
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            .row-count {
+                font-size: 0.75rem;
+                text-align: center;
+                margin-left: 0;
+            }
+            
+            .data-table {
+                font-size: 0.75rem;
+            }
+            
+            .data-table thead th {
+                padding: 0.4rem;
+                font-size: 0.6rem;
+                white-space: normal;
+            }
+            
+            .data-table tbody td {
+                padding: 0.4rem;
+                max-width: 120px;
+                font-size: 0.7rem;
+            }
+            
+            .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.6rem;
+                gap: 0.2rem;
+            }
+            
+            .action-cell {
+                flex-direction: column;
+                gap: 0.3rem;
+                width: 100%;
+            }
+            
+            .btn-view, .btn-edit, .btn-delete {
+                width: 100%;
+                justify-content: center;
+                font-size: 0.55rem;
+            }
+            
+            .badge {
+                padding: 0.15rem 0.4rem;
+                font-size: 0.6rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                max-width: 90vw;
+                max-height: 85vh;
+            }
+            
+            .modal-header {
+                padding: 1.5rem 1.5rem 1rem 1.5rem;
+            }
+            
+            .modal-body {
+                padding: 0 1.5rem;
+            }
+            
+            .modal-footer {
+                padding: 1rem 1.5rem;
+            }
+            
+            .form-group {
+                margin-bottom: 0.8rem;
+            }
+            
+            .searchable-dropdown-input {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .searchable-dropdown-list {
+                max-height: 150px;
+            }
+
+            .searchable-dropdown-option {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+                padding: 0.8rem 1rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                font-size: 14px;
+            }
+            
+            nav {
+                height: 45px;
+                padding: 0 0.75rem;
+            }
+            
+            .nav-brand {
+                font-size: 0.95rem;
+            }
+            
+            .nav-logout {
+                padding: 0.25rem 0.6rem;
+                font-size: 0.65rem;
+            }
+            
+            main {
+                padding: 0.75rem;
+            }
+            
+            .tabs {
+                gap: 0.2rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .tab-btn {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.6rem;
+                letter-spacing: 0px;
+            }
+            
+            .table-wrapper {
+                padding: 0.75rem;
+            }
+            
+            .btn-add {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.6rem;
+            }
+            
+            .data-table {
+                font-size: 0.7rem;
+            }
+            
+            .data-table thead th {
+                padding: 0.3rem;
+                font-size: 0.55rem;
+            }
+            
+            .data-table tbody td {
+                padding: 0.3rem;
+                max-width: 100px;
+                font-size: 0.65rem;
+            }
+            
+            .modal-content {
+                width: 98%;
+                padding: 0;
+                max-height: 80vh;
+            }
+            
+            .modal-header h2 {
+                font-size: 0.95rem;
+            }
+            
+            .modal-footer .btn {
+                min-width: 80px;
+            }
         }
     </style>
 </head>
@@ -1162,34 +1516,52 @@
                 <input type="hidden" name="id" id="clip-id">
                 <div class="form-group">
                     <label>Título</label>
-                    <input type="text" name="clipTitle" id="clip-clipTitle" required>
+                    <input type="text" name="clip_title" id="clip-clip_title" required>
+                </div>
+                <div class="form-group">
+                    <label>Enlace del Clip</label>
+                    <input type="url" name="clip_link" id="clip-clip_link" required>
                 </div>
                 <div class="form-group">
                     <label>Descripción</label>
-                    <textarea name="clipDescription" id="clip-clipDescription"></textarea>
+                    <textarea name="clip_description" id="clip-clip_description"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" name="clipDate" id="clip-clipDate">
+                    <label>Fecha del Clip</label>
+                    <input type="date" name="clip_date" id="clip-clip_date" required>
+                </div>
+                <div class="form-group">
+                    <label>Usuario Publicador</label>
+                    <input type="hidden" name="user_id" id="clip-user_id" required>
+                    <div class="searchable-dropdown" id="dropdown-user">
+                        <input type="text" class="searchable-dropdown-input" placeholder="Buscar usuario..." id="input-user-search">
+                        <div class="searchable-dropdown-list" id="list-user">
+                            {% for user in users %}
+                                <div class="searchable-dropdown-option" data-value="{{ user.id }}" data-label="{{ user.username }}">{{ user.username }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Juego Relacionado</label>
+                    <input type="hidden" name="game_id" id="clip-game_id">
+                    <div class="searchable-dropdown" id="dropdown-game">
+                        <input type="text" class="searchable-dropdown-input" placeholder="Buscar juego..." id="input-game-search">
+                        <div class="searchable-dropdown-list" id="list-game">
+                            {% for game in games %}
+                                <div class="searchable-dropdown-option" data-value="{{ game.id }}" data-label="{{ game.gameName }}">{{ game.gameName }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Estado</label>
-                    <select name="clipStatus" id="clip-clipStatus">
+                    <select name="clip_status" id="clip-clip_status" required>
                         <option value="">Selecciona un estado</option>
                         <option value="0">Pendiente</option>
                         <option value="1">Aceptado</option>
                         <option value="2">Rechazado</option>
                     </select>
-                </div>
-                <div class="form-group">
-                    <label>ID Usuario</label>
-                    <input type="number" name="userId" id="clip-userId" min="1">
-                    <span class="form-help">ID numérico del usuario propietario del clip.</span>
-                </div>
-                <div class="form-group">
-                    <label>ID Juego</label>
-                    <input type="number" name="gameId" id="clip-gameId" min="1">
-                    <span class="form-help">ID numérico del juego asociado al clip.</span>
                 </div>
             </form>
         </div>
@@ -1515,6 +1887,24 @@
             const form = modal.querySelector('form');
             if (form) form.reset();
             
+            // Limpia y reinicia los dropdowns de búsqueda para clips
+            if (modalId === 'modal-clip-form') {
+                document.getElementById('input-user-search').value = '';
+                document.getElementById('clip-user_id').value = '';
+                document.getElementById('input-game-search').value = '';
+                document.getElementById('clip-game_id').value = '';
+                
+                // Limpia la selección visual
+                document.querySelectorAll('#list-user .searchable-dropdown-option, #list-game .searchable-dropdown-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    opt.style.display = '';
+                });
+                
+                // Cierra las listas
+                document.getElementById('list-user').classList.remove('active');
+                document.getElementById('list-game').classList.remove('active');
+            }
+            
             // Actualiza el título del modal
             const titleEl = modal.querySelector('.modal-header h2');
             if (titleEl) {
@@ -1576,6 +1966,31 @@
                     }
 
                     field.value = data[key] ?? '';
+                }
+
+                // Para clips, actualiza los inputs de búsqueda visibles
+                if (modalId === 'modal-clip-form') {
+                    if (data.user_id) {
+                        const userOption = document.querySelector(`#list-user [data-value="${data.user_id}"]`);
+                        if (userOption) {
+                            document.getElementById('input-user-search').value = userOption.getAttribute('data-label');
+                            document.querySelectorAll('#list-user .searchable-dropdown-option').forEach(opt => {
+                                opt.classList.remove('selected');
+                            });
+                            userOption.classList.add('selected');
+                        }
+                    }
+
+                    if (data.game_id) {
+                        const gameOption = document.querySelector(`#list-game [data-value="${data.game_id}"]`);
+                        if (gameOption) {
+                            document.getElementById('input-game-search').value = gameOption.getAttribute('data-label');
+                            document.querySelectorAll('#list-game .searchable-dropdown-option').forEach(opt => {
+                                opt.classList.remove('selected');
+                            });
+                            gameOption.classList.add('selected');
+                        }
+                    }
                 }
 
                 openModal(modalId, 'edit');
@@ -1728,6 +2143,94 @@
             })
             .catch(() => showToast('Error al cargar los detalles', 'error'));
     }
+
+    /**
+     * Inicializa los dropdowns de búsqueda para usuarios y juegos
+     */
+    function initSearchableDropdowns() {
+        initSearchableDropdown('user', 'Usuario');
+        initSearchableDropdown('game', 'Juego');
+    }
+
+    /**
+     * Inicializa un dropdown searchable individual
+     * @param {string} type - Tipo: 'user' o 'game'
+     * @param {string} label - Etiqueta para mostrar en el input
+     */
+    function initSearchableDropdown(type, label) {
+        const input = document.getElementById(`input-${type}-search`);
+        const list = document.getElementById(`list-${type}`);
+        const hidden = document.getElementById(`clip-${type}_id`);
+
+        if (!input || !list) return;
+
+        // Abre/cierra la lista al hacer click en el input
+        input.addEventListener('click', () => {
+            list.classList.toggle('active');
+        });
+
+        // Filtra las opciones mientras se escribe
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const options = list.querySelectorAll('.searchable-dropdown-option');
+            let hasVisibleOptions = false;
+
+            options.forEach(option => {
+                const label = option.getAttribute('data-label').toLowerCase();
+                const matches = label.includes(query);
+                option.style.display = matches ? '' : 'none';
+                if (matches) hasVisibleOptions = true;
+            });
+
+            // Muestra mensaje si no hay resultados
+            let noResults = list.querySelector('.searchable-dropdown-no-results');
+            if (!hasVisibleOptions) {
+                if (!noResults) {
+                    noResults = document.createElement('div');
+                    noResults.className = 'searchable-dropdown-no-results';
+                    noResults.textContent = 'Sin resultados';
+                    list.appendChild(noResults);
+                }
+            } else {
+                if (noResults) noResults.remove();
+            }
+
+            list.classList.add('active');
+        });
+
+        // Selecciona una opción al hacer click
+        list.addEventListener('click', (e) => {
+            if (e.target.classList.contains('searchable-dropdown-option')) {
+                const value = e.target.getAttribute('data-value');
+                const label = e.target.getAttribute('data-label');
+
+                // Actualiza el campo oculto
+                hidden.value = value;
+
+                // Actualiza el input visible
+                input.value = label;
+
+                // Marca la opción como seleccionada
+                list.querySelectorAll('.searchable-dropdown-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                e.target.classList.add('selected');
+
+                // Cierra la lista
+                list.classList.remove('active');
+            }
+        });
+
+        // Cierra la lista al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest(`#dropdown-${type}`)) {
+                list.classList.remove('active');
+            }
+        });
+    }
+
+    // Inicializa dropdowns al cargar la página
+    initSearchableDropdowns();
 
     // Cierra modales al hacer clic fuera de ellos
     document.querySelectorAll('.modal').forEach(modal => {
