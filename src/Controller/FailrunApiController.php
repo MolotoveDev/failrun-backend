@@ -14,6 +14,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\User; //Importamos la entidad User
 use App\Entity\UserRequest; //Importamos la entidad UserRequest
 use App\Entity\Games; //Importamos la entidad Game
+use App\Entity\Clips; //Importamos la entidad Clip
 
 final class FailrunApiController extends AbstractController
 {
@@ -127,7 +128,7 @@ final class FailrunApiController extends AbstractController
     public function getUserRequests(Security $security, EntityManagerInterface $em): JsonResponse
     {
         $user = $security->getUser();
-        $requests = $em->getRepository(UserRequest::class)->findBy(['userId' => $user]);
+        $requests = $em->getRepository(UserRequest::class)->findBy(['user_id' => $user]);
 
         $data = [];
         foreach ($requests as $request) {
@@ -144,17 +145,38 @@ final class FailrunApiController extends AbstractController
     }
 
     #[Route('/failrun/api/get-games', name: 'app_failrun_api_get_games', methods: ['GET'])]
-    public function getGames(): JsonResponse
+    public function getGames(EntityManagerInterface $em): JsonResponse
     {
-        $games = $em->getRepository(Game::class)->findAll();
+        $games = $em->getRepository(Games::class)->findAll();
 
         $data = [];
         foreach ($games as $game) {
             $data[] = [
                 'id' => $game->getId(),
-                'name' => $game->getName(),
-                'description' => $game->getDescription(),
-                'coverImage' => $game->getCoverImage(),
+                'game_name' => $game->getGameName(),
+                'game_description' => $game->getGameDescription(),
+                'cover_img' => $game->getCoverImg(),
+            ];
+        }
+
+        return new JsonResponse(['status' => 'success', 'data' => $data], 200);
+    }
+
+    #[Route('/failrun/api/get-game-clips/{gameId}', name: 'app_failrun_api_get_game_clips', methods: ['GET'])]
+    public function getGameClips(int $gameId, EntityManagerInterface $em): JsonResponse
+    {
+        $clips = $em->getRepository(Clips::class)->findBy(['game_id' => $gameId, 'clip_status' => 1]);
+
+        $data = [];
+        foreach ($clips as $clip) {
+            $data[] = [
+                'user_id' => $clip->getUserId()->getUsername(),
+                'game_id' => $clip->getGameId()->getId(),
+                'clip_title' => $clip->getClipTitle(),
+                'clip_link' => $clip->getClipLink(),
+                'clip_description' => $clip->getClipDescription(),
+                'clip_date' => $clip->getClipDate()->format('Y-m-d H:i:s'),
+                'clip_status' => $clip->getClipStatus(),
             ];
         }
 
