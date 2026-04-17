@@ -342,11 +342,15 @@
         .modal-content {
             background: var(--surface);
             border-radius: 16px;
-            padding: 2rem;
+            padding: 0;
             width: 90%;
             max-width: 500px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             animation: slideInModal 0.2s;
+            overflow: hidden;
         }
 
         @keyframes slideInModal {
@@ -358,9 +362,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 1rem;
+            padding: 2rem 2rem 1rem 2rem;
+            flex-shrink: 0;
         }
 
         .modal-header h2 {
@@ -384,7 +388,10 @@
         }
 
         .modal-body {
-            margin-bottom: 1.5rem;
+            padding: 0 2rem;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
         }
 
         .form-group {
@@ -437,6 +444,9 @@
             display: flex;
             gap: 0.8rem;
             justify-content: flex-end;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
         }
 
         /* TOAST DE NOTIFICACIÓN */
@@ -510,9 +520,7 @@
             
             .modal-content {
                 width: 95%;
-                padding: 1.5rem;
                 max-height: 90vh;
-                overflow-y: auto;
             }
         }
 
@@ -630,49 +638,23 @@
             .modal-content {
                 width: 95%;
                 max-width: 90vw;
-                padding: 1rem;
                 max-height: 85vh;
-                overflow-y: auto;
-                border-radius: 12px;
             }
             
             .modal-header {
-                margin-bottom: 1rem;
-                padding-bottom: 0.75rem;
+                padding: 1.5rem 1.5rem 1rem 1.5rem;
             }
             
-            .modal-header h2 {
-                font-size: 1rem;
+            .modal-body {
+                padding: 0 1.5rem;
+            }
+            
+            .modal-footer {
+                padding: 1rem 1.5rem;
             }
             
             .form-group {
                 margin-bottom: 0.8rem;
-            }
-            
-            .form-group label {
-                font-size: 0.65rem;
-            }
-            
-            .form-group input,
-            .form-group select,
-            .form-group textarea {
-                padding: 0.5rem;
-                font-size: 0.8rem;
-            }
-            
-            .form-help {
-                font-size: 0.65rem;
-            }
-            
-            .modal-footer {
-                gap: 0.6rem;
-                flex-wrap: wrap;
-            }
-            
-            .modal-footer .btn {
-                flex: 1;
-                min-width: 100px;
-                justify-content: center;
             }
             
             .toast {
@@ -744,7 +726,8 @@
             
             .modal-content {
                 width: 98%;
-                padding: 0.75rem;
+                padding: 0;
+                max-height: 80vh;
             }
             
             .modal-header h2 {
