@@ -138,6 +138,7 @@ final class FailrunApiController extends AbstractController
                 'description' => $request->getDescriptionRequest(),
                 'date' => $request->getDateRequest()->format('Y-m-d H:i:s'),
                 'status' => $request->getStatusRequest(),
+                'isActive' => $request->getIsActive(), # This field reference if the request has been filed by the user so the frontend can decide if show it or not in the user requests list. It will be set to false (0) when the request is accepted and the user can no longer see it in their list, but it will be still stored in the database for future reference.
             ];
         }
 
@@ -170,6 +171,7 @@ final class FailrunApiController extends AbstractController
         $data = [];
         foreach ($clips as $clip) {
             $data[] = [
+                'id' => $clip->getId(),
                 'user_id' => $clip->getUserId()->getUsername(),
                 'game_id' => $clip->getGameId()->getId(),
                 'clip_title' => $clip->getClipTitle(),
