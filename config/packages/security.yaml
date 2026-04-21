@@ -33,4 +33,5 @@ security:
         - { path: ^/failrun/api/test, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/get-games, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/get-game-clips, roles: PUBLIC_ACCESS }
+        - { path: ^/failrun/api/get-clip-info, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api, roles: IS_AUTHENTICATED_FULLY }

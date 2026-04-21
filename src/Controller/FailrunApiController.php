@@ -83,6 +83,7 @@ final class FailrunApiController extends AbstractController
     {
         $user = $security->getUser(); //Fetch user info from token
 
+        // Return user info in the response.
         return new JsonResponse([
             'status' => 'success',
             'data' => [
@@ -98,12 +99,14 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/send-user-request', name: 'app_failrun_api_send_user_request', methods: ['POST'])]
     public function sendUserRequest(Request $request, Security $security, EntityManagerInterface $em): JsonResponse
     {
+        //Stablish user and data objects
         $user = $security->getUser();
         $data = json_decode($request->getContent(), true);
 
         $userRequest = new UserRequest();
         $userRequest->setUserId($user);
         
+        //Exception managment: If no title or description is provided, return an error response. Both fields are required to create a user request.
         if (!empty($data['title'])) {
             $userRequest->setTitleRequest($data['title']);
         } else {
@@ -116,6 +119,7 @@ final class FailrunApiController extends AbstractController
             return new JsonResponse(['status' => 'error', 'message' => 'Description is required'], 400);
         }
 
+        //Apply the data to the user request entity and flush it to the database.
         $userRequest->setDateRequest(new \DateTime());
         $userRequest->setStatusRequest(0); //0 = pending, 1 = accepted, 2 = rejected
         $em->persist($userRequest);
@@ -130,6 +134,7 @@ final class FailrunApiController extends AbstractController
         $user = $security->getUser();
         $requests = $em->getRepository(UserRequest::class)->findBy(['user_id' => $user]);
 
+        // For every request, we create an array with the relevant data to return it in the response. We also include the isActive field to indicate if the request is still active (pending) or if it has been accepted/rejected and should no longer be shown in the user's request list.
         $data = [];
         foreach ($requests as $request) {
             $data[] = [
@@ -138,7 +143,7 @@ final class FailrunApiController extends AbstractController
                 'description' => $request->getDescriptionRequest(),
                 'date' => $request->getDateRequest()->format('Y-m-d H:i:s'),
                 'status' => $request->getStatusRequest(),
-                'isActive' => $request->getIsActive(), # This field reference if the request has been filed by the user so the frontend can decide if show it or not in the user requests list. It will be set to false (0) when the request is accepted and the user can no longer see it in their list, but it will be still stored in the database for future reference.
+                'isActive' => $request->getIsActive(), // This field reference if the request has been filed by the user so the frontend can decide if show it or not in the user requests list. It will be set to false (0) when the request is accepted and the user can no longer see it in their list, but it will be still stored in the database for future reference.
             ];
         }
 
@@ -150,6 +155,7 @@ final class FailrunApiController extends AbstractController
     {
         $games = $em->getRepository(Games::class)->findAll();
 
+        // For every game, we create an array with the relevant data to return it in the response.
         $data = [];
         foreach ($games as $game) {
             $data[] = [
@@ -168,6 +174,7 @@ final class FailrunApiController extends AbstractController
     {
         $clips = $em->getRepository(Clips::class)->findBy(['game_id' => $gameId, 'clip_status' => 1]);
 
+        // For every clip, we create an array with the relevant data to return it in the response. We also include the username of the user that uploaded the clip and format the date to a more readable format.
         $data = [];
         foreach ($clips as $clip) {
             $data[] = [
@@ -183,5 +190,81 @@ final class FailrunApiController extends AbstractController
         }
 
         return new JsonResponse(['status' => 'success', 'data' => $data], 200);
+    }
+
+    #[Route('/failrun/api/get-clip-info/{clipId}', name: 'app_failrun_api_get_clip_info', methods: ['GET'])]
+    public function getClipInfo(int $clipId, EntityManagerInterface $em): JsonResponse
+    {
+        $clip = $em->getRepository(Clips::class)->find($clipId);
+        $conn = $em->getConnection();
+
+        // If ther's no clip before executing the query, we return an error response indicating that the clip was not found. 
+        // This is to avoid executing the query with an invalid clipId and to provide a clear error message to the frontend.
+        if (!$clip) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Clip not found'], 404);
+        }
+
+        // When we go to the clip view, we need to fetch not only the clip info, but also the ratings and comments from the users that have rated the clip. 
+        // To do this, we execute a custom SQL query that joins the clips, user_rate and user tables to get all the relevant information in a single query. 
+        // We order the results by rating in descending order so the highest rated comments appear first in the clip view.
+        $sql = "SELECT 
+            c.*,
+            u.username,
+            ur.rate,
+            ur.user_comment,
+            ur.rate_date
+        FROM clips c
+        LEFT JOIN user_rate ur ON c.id = ur.clip_id_id
+        LEFT JOIN user u ON ur.user_id_id = u.id
+        WHERE c.id = :clipId
+        ORDER BY ur.rate DESC;";
+        
+        
+        // We execute the query with the provided clipId and fetch all the results as an associative array. 
+        // This will give us an array of comments and ratings for the clip, along with the clip info and the username of the users that rated it.
+        $result = $conn->executeQuery($sql, ['clipId' => $clipId])->fetchAllAssociative();
+
+        return new JsonResponse(['status' => 'success', 'data' => $result], 200);
+    }
+
+    #[Route('/failrun/api/rate-clip/{clipId}', name: 'app_failrun_api_rate_clip', methods: ['PUT'])]
+    public function rateClip(int $clipId, Request $request, Security $security, EntityManagerInterface $em): JsonResponse
+    {
+        // Validate user
+        $user = $security->getUser();
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        // Validate payload
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['rate'], $data['comment'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Missing required fields: rate, comment'], 400);
+        }
+
+        if (!is_numeric($data['rate']) || $data['rate'] < 1 || $data['rate'] > 5) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Rate must be a number between 1 and 5'], 400);
+        }
+
+        // Validate clip
+        $clip = $em->getRepository(Clips::class)->find($clipId);
+        if (!$clip) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Clip not found'], 404);
+        }
+
+        // Update or create rating
+        $rating = $em->getRepository(UserRate::class)->findOneBy(['user_id' => $user, 'clip_id' => $clip])
+            ?? new UserRate();
+
+        $rating->setUserId($user);
+        $rating->setClipId($clip);
+        $rating->setRate($data['rate']);
+        $rating->setUserComment($data['comment']);
+        $rating->setRateDate(new \DateTimeImmutable());
+
+        $em->persist($rating);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success', 'message' => 'Clip rated successfully'], 200);
     }
 }
