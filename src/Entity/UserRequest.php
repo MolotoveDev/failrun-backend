@@ -98,7 +98,7 @@ class UserRequest
         return $this;
     }
 
-    public function isActive(): ?bool
+    public function getisActive(): ?bool
     {
         return $this->isActive;
     }
