@@ -749,10 +749,6 @@
                 padding: 0.5rem;
                 font-size: 0.8rem;
             }
-
-                padding: 0.8rem 1rem;
-                font-size: 0.8rem;
-            }
         }
 
         @media (max-width: 480px) {
@@ -1942,53 +1938,61 @@
         fetch(`/failrun/admin/entity/${entity}/${id}`)
             .then(response => response.json())
             .then(data => {
-                const modal = document.getElementById(modalId);
-                const form = modal.querySelector('form');
+                const modal   = document.getElementById(modalId);
+                const form    = modal.querySelector('form');
                 const titleEl = modal.querySelector('.modal-header h2');
 
-                // Actualiza el título
                 if (titleEl) titleEl.textContent = 'Editar Registro';
 
-                // Llena los campos del formulario
-                for (let key in data) {
-                    const field = form.elements[key];
-                    if (!field) continue;
+                // ─── Helper: camelCase → snake_case ───────────────────────────
+                // Convierte p.ej. "clipTitle" → "clip_title", "userId" → "user_id"
+                const toSnake = str => str.replace(/([A-Z])/g, '_$1').toLowerCase();
 
-                    if (key === 'roles' && form.elements['role']) {
-                        if (Array.isArray(data.roles) && data.roles.includes('ROLE_ADMIN')) {
-                            form.elements['role'].value = 'ROLE_ADMIN';
-                        } else if (Array.isArray(data.roles) && data.roles.includes('ROLE_MODERATOR')) {
-                            form.elements['role'].value = 'ROLE_MODERATOR';
-                        } else {
-                            form.elements['role'].value = 'ROLE_USER';
+                // ─── Rellena todos los campos del formulario ──────────────────
+                for (let key in data) {
+
+                    // El campo 'role' de users ya viene formateado desde el controlador
+                    if (key === 'role') {
+                        if (form.elements['role']) {
+                            form.elements['role'].value = data[key] || 'ROLE_USER';
                         }
                         continue;
                     }
 
-                    field.value = data[key] ?? '';
+                    // Busca primero por nombre exacto, luego por snake_case
+                    // Esto cubre: games/marks/users (camelCase) Y clips (snake_case)
+                    const field = form.elements[key] || form.elements[toSnake(key)];
+                    if (!field) continue;
+
+                    field.value = (data[key] !== null && data[key] !== undefined) ? data[key] : '';
                 }
 
-                // Para clips, actualiza los inputs de búsqueda visibles
+                // ─── Clips: rellena los dropdowns de búsqueda visibles ────────
+                // CORREGIDO: la API devuelve "userId" y "gameId" (camelCase)
                 if (modalId === 'modal-clip-form') {
-                    if (data.user_id) {
-                        const userOption = document.querySelector(`#list-user [data-value="${data.user_id}"]`);
+                    const userId = data.userId;
+                    if (userId) {
+                        const userOption = document.querySelector(`#list-user [data-value="${userId}"]`);
                         if (userOption) {
                             document.getElementById('input-user-search').value = userOption.getAttribute('data-label');
-                            document.querySelectorAll('#list-user .searchable-dropdown-option').forEach(opt => {
-                                opt.classList.remove('selected');
-                            });
+                            document.querySelectorAll('#list-user .searchable-dropdown-option')
+                                .forEach(opt => opt.classList.remove('selected'));
                             userOption.classList.add('selected');
+                            // Sincroniza también el hidden input
+                            document.getElementById('clip-user_id').value = userId;
                         }
                     }
 
-                    if (data.game_id) {
-                        const gameOption = document.querySelector(`#list-game [data-value="${data.game_id}"]`);
+                    const gameId = data.gameId;
+                    if (gameId) {
+                        const gameOption = document.querySelector(`#list-game [data-value="${gameId}"]`);
                         if (gameOption) {
                             document.getElementById('input-game-search').value = gameOption.getAttribute('data-label');
-                            document.querySelectorAll('#list-game .searchable-dropdown-option').forEach(opt => {
-                                opt.classList.remove('selected');
-                            });
+                            document.querySelectorAll('#list-game .searchable-dropdown-option')
+                                .forEach(opt => opt.classList.remove('selected'));
                             gameOption.classList.add('selected');
+                            // Sincroniza también el hidden input
+                            document.getElementById('clip-game_id').value = gameId;
                         }
                     }
                 }
