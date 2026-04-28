@@ -30,8 +30,8 @@ class UserRequest
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user_id = null;
 
-    #[ORM\Column]
-    private ?bool $isActive = null;
+    #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    private bool $isActive = true;
 
     public function getId(): ?int
     {
@@ -98,7 +98,7 @@ class UserRequest
         return $this;
     }
 
-    public function isActive(): ?bool
+    public function getisActive(): ?bool
     {
         return $this->isActive;
     }
