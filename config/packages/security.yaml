@@ -27,7 +27,7 @@ security:
 
     access_control:
         - { path: ^/failrun/admin/login, roles: PUBLIC_ACCESS }
-        - { path: ^/failrun/admin, roles: ROLE_ADMIN }
+        - { path: ^/failrun/admin, roles: [ROLE_ADMIN, ROLE_MODERATOR] }
         - { path: ^/failrun/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/test, roles: PUBLIC_ACCESS }
