@@ -267,4 +267,58 @@ final class FailrunApiController extends AbstractController
 
         return new JsonResponse(['status' => 'success', 'message' => 'Clip rated successfully'], 200);
     }
+
+    #[Route('/failrun/api/delete-rate/{rateId}', name: 'app_failrun_api_delete_rate', methods: ['DELETE'])]
+    public function deleteRate(int $rateId, Security $security, EntityManagerInterface $em): JsonResponse
+    {
+        // Validate user
+        $user = $security->getUser();
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        // Find the rating
+        $rating = $em->getRepository(UserRate::class)->find($rateId);
+        if (!$rating) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Rating not found'], 404);
+        }
+
+        // Check if the user is the owner of the rating or has ROLE_ADMIN or ROLE_MODERATOR
+        if ($rating->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        // Delete the rating
+        $em->remove($rating);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success', 'message' => 'Rating deleted successfully'], 200);
+    }
+
+    #[Route('/failrun/api/remove-clip/{clipId}', name: 'app_failrun_api_remove_clip', methods: ['DELETE'])]
+    public function removeClip(int $clipId, Security $security, EntityManagerInterface $em): JsonResponse
+    {
+        // Validate user
+        $user = $security->getUser();
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        // Find the clip
+        $clip = $em->getRepository(Clips::class)->find($clipId);
+        if (!$clip) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Clip not found'], 404);
+        }
+
+        // Check if the user is the owner of the clip or has ROLE_ADMIN or ROLE_MODERATOR
+        if ($clip->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        // Delete the clip
+        $em->remove($clip);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success', 'message' => 'Clip removed successfully'], 200);
+    }
 }
