@@ -9,6 +9,7 @@ use App\Entity\MarkType;
 use App\Entity\User;
 use App\Entity\UserRate;
 use App\Entity\UserRequest;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,7 +33,7 @@ final class FailrunAdminPanelController extends AbstractController
     #[Route('/failrun/admin/login', name: 'app_failrun_admin_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_MODERATOR')) {
             return $this->redirectToRoute('app_failrun_admin_panel');
         }
 
@@ -51,7 +52,9 @@ final class FailrunAdminPanelController extends AbstractController
     #[Route('/failrun/admin/panel', name: 'app_failrun_admin_panel')]
     public function index(EntityManagerInterface $em): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_MODERATOR')) {
+            throw $this->createAccessDeniedException('Acceso denegado');
+        }
 
         return $this->render('failrun_admin_panel/index.html.twig', [
             'users'         => $em->getRepository(User::class)->findAll(),
@@ -77,7 +80,9 @@ final class FailrunAdminPanelController extends AbstractController
     #[Route('/failrun/admin/entity/{entity}/{id}/view', name: 'app_failrun_admin_view_entity')]
     public function viewEntityPage(string $entity, int $id, EntityManagerInterface $em): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_MODERATOR')) {
+            throw $this->createAccessDeniedException('Acceso denegado');
+        }
 
         // Los usuarios no tienen vista de detalle
         if ($entity === 'users') {
@@ -117,7 +122,13 @@ final class FailrunAdminPanelController extends AbstractController
     #[Route('/failrun/admin/entity/{entity}/{id}', name: 'app_failrun_admin_get_entity', methods: ['GET'])]
     public function getEntity(string $entity, int $id, EntityManagerInterface $em): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_MODERATOR')) {
+            throw $this->createAccessDeniedException('Acceso denegado');
+        }
+
+        if ($entity === 'users' && !$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'Solo los administradores pueden gestionar usuarios'], 403);
+        }
 
         $entityMap = [
             'users'         => User::class,
@@ -173,7 +184,13 @@ final class FailrunAdminPanelController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher
     ): JsonResponse {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_MODERATOR')) {
+            throw $this->createAccessDeniedException('Acceso denegado');
+        }
+
+        if ($entity === 'users' && !$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'Solo los administradores pueden gestionar usuarios'], 403);
+        }
 
         $entityMap = [
             'users'         => User::class,
@@ -326,7 +343,13 @@ final class FailrunAdminPanelController extends AbstractController
     #[Route('/failrun/admin/entity/{entity}/{id}', name: 'app_failrun_admin_delete_entity', methods: ['DELETE'])]
     public function deleteEntity(string $entity, int $id, EntityManagerInterface $em): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_MODERATOR')) {
+            throw $this->createAccessDeniedException('Acceso denegado');
+        }
+
+        if ($entity === 'users' && !$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'Solo los administradores pueden gestionar usuarios'], 403);
+        }
 
         $entityMap = [
             'users'         => User::class,
@@ -383,6 +406,8 @@ final class FailrunAdminPanelController extends AbstractController
             if ($value instanceof \DateTimeInterface) {
                 // Devuelve YYYY-MM-DD para que funcione con <input type="date">
                 $result[$propertyName] = $value->format('Y-m-d');
+            } elseif ($value instanceof Collection) {
+                // Ignora colecciones OneToMany: no son necesarias en los formularios
             } elseif (is_object($value) && method_exists($value, 'getId')) {
                 $result[$propertyName] = $value->getId();
             } else {

@@ -184,4 +184,26 @@ final class FailrunApiController extends AbstractController
 
         return new JsonResponse(['status' => 'success', 'data' => $data], 200);
     }
+
+    #[Route('/failrun/api/get-user-clips/{userId}', name: 'app_failrun_api_get_user_clips', methods: ['GET'])]
+    public function getUserClips(int $userId, EntityManagerInterface $em): JsonResponse
+    {
+        $clips = $em->getRepository(Clips::class)->findBy(['user_id' => $userId]);
+
+        $data = [];
+        foreach ($clips as $clip) {
+            $data[] = [
+                'id' => $clip->getId(),
+                'user_id' => $clip->getUserId()->getUsername(),
+                'game_id' => $clip->getGameId()->getId(),
+                'clip_title' => $clip->getClipTitle(),
+                'clip_link' => $clip->getClipLink(),
+                'clip_description' => $clip->getClipDescription(),
+                'clip_date' => $clip->getClipDate()->format('Y-m-d H:i:s'),
+                'clip_status' => $clip->getClipStatus(),
+            ];
+        }
+
+        return new JsonResponse(['status' => 'success', 'data' => $data], 200);
+    }
 }

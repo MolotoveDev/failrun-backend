@@ -834,8 +834,10 @@
 
 <main>
     <div class="tabs">
+        {% if is_granted('ROLE_ADMIN') %}
         <button class="tab-btn active" onclick="switchTab(event, 'users')">Usuarios</button>
-        <button class="tab-btn" onclick="switchTab(event, 'clips')">Clips</button>
+        {% endif %}
+        <button class="tab-btn {{ is_granted('ROLE_ADMIN') ? '' : 'active' }}" onclick="switchTab(event, 'clips')">Clips</button>
         <button class="tab-btn" onclick="switchTab(event, 'games')">Juegos</button>
         <button class="tab-btn" onclick="switchTab(event, 'marks')">Marcas</button>
         <button class="tab-btn" onclick="switchTab(event, 'mark_types')">Tipos de Marca</button>
@@ -843,7 +845,8 @@
         <button class="tab-btn" onclick="switchTab(event, 'user_requests')">Solicitudes</button>
     </div>
 
-    {# USERS #}
+    {# USERS — solo visible para ROLE_ADMIN #}
+    {% if is_granted('ROLE_ADMIN') %}
     <div class="tab-panel active" id="tab-users">
         <div class="table-wrapper">
             <button class="btn btn-add" onclick="openModal('modal-user-form', 'new')">+ Añadir Usuario</button>
@@ -909,9 +912,10 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
     {# CLIPS #}
-    <div class="tab-panel" id="tab-clips">
+    <div class="tab-panel {{ is_granted('ROLE_ADMIN') ? '' : 'active' }}" id="tab-clips">
         <div class="table-wrapper">
             <button class="btn btn-add" onclick="openModal('modal-clip-form', 'new')">+ Añadir Clip</button>
             <div class="table-toolbar">
@@ -1944,14 +1948,11 @@
 
                 if (titleEl) titleEl.textContent = 'Editar Registro';
 
-                // ─── Helper: camelCase → snake_case ───────────────────────────
-                // Convierte p.ej. "clipTitle" → "clip_title", "userId" → "user_id"
+                // Los props de entidad son snake_case; los campos del form pueden ser camelCase
                 const toSnake = str => str.replace(/([A-Z])/g, '_$1').toLowerCase();
+                const toCamel = str => str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
 
-                // ─── Rellena todos los campos del formulario ──────────────────
                 for (let key in data) {
-
-                    // El campo 'role' de users ya viene formateado desde el controlador
                     if (key === 'role') {
                         if (form.elements['role']) {
                             form.elements['role'].value = data[key] || 'ROLE_USER';
@@ -1959,18 +1960,24 @@
                         continue;
                     }
 
-                    // Busca primero por nombre exacto, luego por snake_case
-                    // Esto cubre: games/marks/users (camelCase) Y clips (snake_case)
-                    const field = form.elements[key] || form.elements[toSnake(key)];
+                    // Busca por nombre exacto, luego snake_case, luego camelCase
+                    const field = form.elements[key]
+                        || form.elements[toSnake(key)]
+                        || form.elements[toCamel(key)];
                     if (!field) continue;
 
                     field.value = (data[key] !== null && data[key] !== undefined) ? data[key] : '';
                 }
 
-                // ─── Clips: rellena los dropdowns de búsqueda visibles ────────
-                // CORREGIDO: la API devuelve "userId" y "gameId" (camelCase)
+                // Vacía siempre el campo de contraseña al editar (nunca se pre-rellena)
+                if (form.elements['plainPassword']) {
+                    form.elements['plainPassword'].value = '';
+                }
+
+                // Clips: actualiza los dropdowns visibles de usuario y juego
+                // La API devuelve snake_case: user_id, game_id
                 if (modalId === 'modal-clip-form') {
-                    const userId = data.userId;
+                    const userId = data.user_id;
                     if (userId) {
                         const userOption = document.querySelector(`#list-user [data-value="${userId}"]`);
                         if (userOption) {
@@ -1978,12 +1985,11 @@
                             document.querySelectorAll('#list-user .searchable-dropdown-option')
                                 .forEach(opt => opt.classList.remove('selected'));
                             userOption.classList.add('selected');
-                            // Sincroniza también el hidden input
                             document.getElementById('clip-user_id').value = userId;
                         }
                     }
 
-                    const gameId = data.gameId;
+                    const gameId = data.game_id;
                     if (gameId) {
                         const gameOption = document.querySelector(`#list-game [data-value="${gameId}"]`);
                         if (gameOption) {
@@ -1991,7 +1997,6 @@
                             document.querySelectorAll('#list-game .searchable-dropdown-option')
                                 .forEach(opt => opt.classList.remove('selected'));
                             gameOption.classList.add('selected');
-                            // Sincroniza también el hidden input
                             document.getElementById('clip-game_id').value = gameId;
                         }
                     }
