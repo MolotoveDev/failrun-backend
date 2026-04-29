@@ -342,4 +342,5 @@ final class FailrunApiController extends AbstractController
         }
 
         return new JsonResponse(['status' => 'success', 'data' => $data], 200);
+    }
 }
