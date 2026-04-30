@@ -219,11 +219,17 @@ final class FailrunApiController extends AbstractController
                 LEFT JOIN user u ON ur.user_id_id = u.id
                 WHERE c.id = :clipId
                 ORDER BY ur.rate DESC;";
+
+        $bufferAverage = "SELECT AVG(rate) AS mediaTotal
+                          FROM user_rate ur
+                          LEFT JOIN clips c ON c.id = ur.clip_id_id
+                          WHERE clip_id_id = :clipId;";
         
         
         // We execute the query with the provided clipId and fetch all the results as an associative array. 
         // This will give us an array of comments and ratings for the clip, along with the clip info and the username of the users that rated it.
         $result = $conn->executeQuery($sql, ['clipId' => $clipId])->fetchAllAssociative();
+        $average = $conn->executeQuery($bufferAverage, ['clipId' => $clipId])->fetchAssociative();
 
         return new JsonResponse(['status' => 'success', 'data' => $result], 200);
     }
