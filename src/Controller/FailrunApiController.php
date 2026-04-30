@@ -342,4 +342,111 @@ final class FailrunApiController extends AbstractController
         }
 
         return new JsonResponse(['status' => 'success', 'data' => $data], 200);
+    }
+
+    #[Route('/failrun/api/submit-clip', name: 'app_failrun_api_submit_clip', methods: ['POST'])]
+    public function submitClip(Request $request, Security $security, EntityManagerInterface $em): JsonResponse
+    {
+        //We get the userid
+        $user = $security->getUser();
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        //Treat the request data and validate it
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['gameId'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: gameId'], 400);
+        }
+
+        if(!isset($data['clipTitle'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: clipTitle'], 400);
+        }
+
+        if (!isset($data['clipLink'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: clipLink'], 400);
+        }
+
+        if (!isset($data['clipDescription'])) {
+            $clipDescription = null; //Clip description is optional, so we set it to null if it's not provided.
+        }
+        else {
+            $clipDescription = $data['clipDescription'];
+        }
+
+        $game = $em->getRepository(Games::class)->find($data['gameId']);
+
+        if (!$game) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Game not found'], 404);
+        }
+
+        $clip = new Clips();
+        $clip->setUserId($user);
+        $clip->setGameId($game);
+        $clip->setClipTitle($data['clipTitle']);
+        $clip->setClipLink($data['clipLink']);
+        $clip->setClipDescription($clipDescription);
+        $clip->setClipDate(new \DateTime());
+        $clip->setClipStatus(0); //Set clip status to 0 (pending)
+
+        $em->persist($clip);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success', 'message' => 'Clip submitted successfully'], 200);
+    }
+
+    #[Route('/failrun/api/modify-clip/{clipId}', name: 'app_failrun_api_modify_clip', methods: ['PUT'])]
+    public function modifyClip(int $clipId, Request $request, Security $security, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $security->getUser();
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        $clip = $em->getRepository(Clips::class)->find($clipId);
+        if (!$clip) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Clip not found'], 404);
+        }
+
+        // Check if the user is the owner of the clip or has ROLE_ADMIN or ROLE_MODERATOR
+        if ($clip->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        // Treat the request data and validate it
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['gameId'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: gameId'], 400);
+        }
+
+        if(!isset($data['clipTitle'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: clipTitle'], 400);
+        }
+
+        if (!isset($data['clipLink'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: clipLink'], 400);
+        }
+
+        if (!isset($data['clipDescription'])) {
+            $clipDescription = null; //Clip description is optional, so we set it to null if it's not provided.
+        }
+        else {
+            $clipDescription = $data['clipDescription'];
+        }
+
+        $game = $em->getRepository(Games::class)->find($data['gameId']);
+
+        if (!$game) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Game not found'], 404);
+        }
+
+        $clip->setGameId($game);
+        $clip->setClipTitle($data['clipTitle']);
+        $clip->setClipLink($data['clipLink']);
+        $clip->setClipDescription($clipDescription);
+
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success', 'message' => 'Clip modified successfully'], 200);
+    }
 }
