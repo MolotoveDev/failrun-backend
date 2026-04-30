@@ -449,4 +449,29 @@ final class FailrunApiController extends AbstractController
 
         return new JsonResponse(['status' => 'success', 'message' => 'Clip modified successfully'], 200);
     }
+
+    #[Route('/failrun/api/archive-request/{requestId}', name: 'app_failrun_api_archive_request', methods: ['PUT'])]
+    public function archiveRequest(int $requestId, Security $security, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $security->getUser();
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        $request = $em->getRepository(UserRequest::class)->find($requestId);
+        if (!$request) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Request not found'], 404);
+        }
+
+        // Check if the user is the owner of the request or has ROLE_ADMIN or ROLE_MODERATOR
+        if ($request->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->setIsActive(0); //Set isActive to false (0) to archive the request and hide it from the user's request list.
+
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success', 'message' => 'Request archived successfully'], 200);
+    }
 }
