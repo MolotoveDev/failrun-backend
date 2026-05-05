@@ -228,10 +228,14 @@ final class FailrunApiController extends AbstractController
         
         // We execute the query with the provided clipId and fetch all the results as an associative array. 
         // This will give us an array of comments and ratings for the clip, along with the clip info and the username of the users that rated it.
-        $result = $conn->executeQuery($sql, ['clipId' => $clipId])->fetchAllAssociative();
+        $result  = $conn->executeQuery($sql, ['clipId' => $clipId])->fetchAllAssociative();
         $average = $conn->executeQuery($bufferAverage, ['clipId' => $clipId])->fetchAssociative();
 
-        return new JsonResponse(['status' => 'success', 'data' => $result], 200);
+        return new JsonResponse([
+            'status'  => 'success',
+            'data'    => $result,
+            'average' => $average['mediaTotal'],
+        ], 200);
     }
 
     #[Route('/failrun/api/rate-clip/{clipId}', name: 'app_failrun_api_rate_clip', methods: ['PUT'])]

@@ -829,6 +829,9 @@
 
 <nav>
     <div class="nav-brand">FAILRUN <span>ADMIN PANEL</span></div>
+    {% if is_granted('ROLE_ADMIN') %}
+    <a href="{{ path('app_failrun_admin_api_keys') }}" class="nav-logout" style="margin-left:auto;margin-right:1rem">API KEYS</a>
+    {% endif %}
     <a href="{{ path('app_failrun_admin_logout') }}" class="nav-logout">CERRAR SESIÓN</a>
 </nav>
 

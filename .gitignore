@@ -31,3 +31,7 @@
 config/secrets/prod/prod.decrypt.private.php
 config/secrets/dev/dev.decrypt.private.php
 config/jwt/private.pem
+
+
+# Claude AI
+.claude/
