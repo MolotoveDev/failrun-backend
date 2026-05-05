@@ -38,7 +38,7 @@ final class FailrunAdminPanelController extends AbstractController
             throw $this->createAccessDeniedException('Solo administradores.');
         }
 
-        return $this->render('failrun_admin_panel/api_keys.html.twig', [
+        return $this->render('failrun_admin_panel/api_keys.twig', [
             'apiKeys' => $em->getRepository(ApiKey::class)->findAll(),
         ]);
     }
