@@ -493,4 +493,34 @@ final class FailrunApiController extends AbstractController
 
         return new JsonResponse(['status' => 'success', 'message' => 'Request archived successfully'], 200);
     }
+
+    #[Route('/failrun/api/get-top-rated-clips/{totalClips}', name: 'app_failrun_api_get_top_rated_clips', methods: ['GET'])]
+    public function getTopRatedClips(int $totalClips, EntityManagerInterface $em): JsonResponse
+    {
+        $sql = "SELECT c.clip_link, u.username, AVG(ur.rate) AS average_rate
+                FROM clips c
+                JOIN user_rate ur ON c.id = ur.clip_id_id
+                JOIN user u ON c.user_id_id = u.id
+                WHERE c.clip_status = 1
+                GROUP BY c.id, u.username
+                ORDER BY average_rate DESC
+                LIMIT :totalClips;";
+
+        $result = $em->getConnection()->executeQuery($sql, ['totalClips' => $totalClips], ['totalClips' => \Doctrine\DBAL\ParameterType::INTEGER])->fetchAllAssociative();
+        return new JsonResponse(['status' => 'success', 'data' => $result], 200);
+    }
+
+    #[Route('/failrun/api/get-random-clips/{totalClips}', name: 'app_failrun_api_get_random_clips', methods: ['GET'])]
+    public function getRandomClips(int $totalClips, EntityManagerInterface $em): JsonResponse
+    {
+        $sql = "SELECT c.clip_link, u.username
+                FROM clips c
+                JOIN user u ON c.user_id_id = u.id
+                WHERE c.clip_status = 1
+                ORDER BY RAND()
+                LIMIT :totalClips;";
+
+        $result = $em->getConnection()->executeQuery($sql, ['totalClips' => $totalClips], ['totalClips' => \Doctrine\DBAL\ParameterType::INTEGER])->fetchAllAssociative();
+        return new JsonResponse(['status' => 'success', 'data' => $result], 200);
+    }
 }
