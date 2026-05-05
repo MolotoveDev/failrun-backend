@@ -278,7 +278,7 @@ final class FailrunApiController extends AbstractController
         $rating->setClipId($clip);
         $rating->setRate($data['rate']);
         $rating->setUserComment($data['comment']);
-        $rating->setRateDate(new \DateTimeImmutable());
+        $rating->setRateDate(new \DateTime());
 
         $em->persist($rating);
         $em->flush();
