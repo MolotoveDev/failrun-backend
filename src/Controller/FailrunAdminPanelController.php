@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use App\Entity\ApiKey; //Importamos la entidad ApiKey -> VERIFICACIONES DE API, ETC...
+use App\Entity\ApiKey;
 
 /**
  * Controlador del panel administrativo de Failrun
@@ -29,8 +29,11 @@ use App\Entity\ApiKey; //Importamos la entidad ApiKey -> VERIFICACIONES DE API, 
 final class FailrunAdminPanelController extends AbstractController
 {
     /**
-     *  !! API ENDPOINTS AND METHODS !!
+     * API Key management — restricted to ROLE_ADMIN.
+     * Keys are stored as SHA-256 hashes; the plain-text key is returned only once on generation.
      */
+
+    // Renders the API key management view with all existing keys.
     #[Route('/failrun/admin/api-keys', name: 'app_failrun_admin_api_keys', methods: ['GET'])]
     public function apiKeys(EntityManagerInterface $em): Response
     {
@@ -43,6 +46,7 @@ final class FailrunAdminPanelController extends AbstractController
         ]);
     }
 
+    // Generates a cryptographically random 64-char hex key, persists its SHA-256 hash, and returns the plain key once.
     #[Route('/failrun/admin/api-keys/generate', name: 'app_failrun_admin_api_keys_generate', methods: ['POST'])]
     public function generateApiKey(Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -57,7 +61,7 @@ final class FailrunAdminPanelController extends AbstractController
             return $this->json(['error' => 'El nombre es obligatorio.'], 400);
         }
 
-        $rawKey = bin2hex(random_bytes(32)); // 64 caracteres hexadecimales
+        $rawKey = bin2hex(random_bytes(32));
         $hash   = hash('sha256', $rawKey);
 
         $apiKey = new ApiKey();
@@ -71,12 +75,13 @@ final class FailrunAdminPanelController extends AbstractController
 
         return $this->json([
             'success' => true,
-            'key'     => $rawKey, // Se muestra UNA sola vez, no se vuelve a poder consultar
+            'key'     => $rawKey,
             'id'      => $apiKey->getId(),
             'name'    => $apiKey->getName(),
         ]);
     }
 
+    // Deactivates a key without deleting it, preserving the audit trail.
     #[Route('/failrun/admin/api-keys/{id}/revoke', name: 'app_failrun_admin_api_keys_revoke', methods: ['POST'])]
     public function revokeApiKey(int $id, EntityManagerInterface $em): JsonResponse
     {
