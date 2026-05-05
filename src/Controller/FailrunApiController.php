@@ -33,6 +33,12 @@ final class FailrunApiController extends AbstractController
         return $this->json(['message' => 'Hello, World!!!!!']); //Simple test endpoint to verify API is working. Can also be used as a health check.
     }
 
+    #[Route('/failrun/api/key-test', name: 'app_failrun_api_key_test', methods: ['GET'])]
+    public function keyTest(): JsonResponse
+    {
+        return $this->json(['message' => 'API key test successful']);
+    }
+
     #[Route('/failrun/api/register', name: 'app_failrun_api_register')]
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): JsonResponse
     {
