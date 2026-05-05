@@ -11,10 +11,11 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
-use App\Entity\User; //Importamos la entidad User
-use App\Entity\UserRequest; //Importamos la entidad UserRequest
-use App\Entity\Games; //Importamos la entidad Game
-use App\Entity\Clips; //Importamos la entidad Clip
+use App\Entity\User;
+use App\Entity\UserRequest;
+use App\Entity\UserRate;
+use App\Entity\Games;
+use App\Entity\Clips;
 
 final class FailrunApiController extends AbstractController
 {
