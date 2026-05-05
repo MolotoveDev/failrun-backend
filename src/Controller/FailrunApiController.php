@@ -215,17 +215,18 @@ final class FailrunApiController extends AbstractController
         // To do this, we execute a custom SQL query that joins the clips, user_rate and user tables to get all the relevant information in a single query. 
         // We order the results by rating in descending order so the highest rated comments appear first in the clip view.
         $sql = "SELECT
-                    c.*,
-                    u.username,
-                    ur.rate,
-                    ur.user_comment,
-                    ur.rate_date,
+                c.*,
+                ur.id AS rate_id,
+                u.username,
+                ur.rate,
+                ur.user_comment,
+                ur.rate_date,
                 (SELECT AVG(rate) FROM user_rate WHERE clip_id_id = c.id) AS mediaTotal
-                FROM clips c
-                LEFT JOIN user_rate ur ON c.id = ur.clip_id_id
-                LEFT JOIN user u ON ur.user_id_id = u.id
-                WHERE c.id = :clipId
-                ORDER BY ur.rate DESC;";
+            FROM clips c
+            LEFT JOIN user_rate ur ON c.id = ur.clip_id_id
+            LEFT JOIN user u ON ur.user_id_id = u.id
+            WHERE c.id = :clipId
+            ORDER BY ur.rate DESC;";
 
         $bufferAverage = "SELECT AVG(rate) AS mediaTotal
                           FROM user_rate ur
