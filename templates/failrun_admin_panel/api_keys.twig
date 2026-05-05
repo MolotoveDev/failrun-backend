@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Failrun — API Keys</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --red:#FF2D55; --bg:#333335; --surface:#41414A; --surface2:#2a2a30; --text:#fff; --border:rgba(255,255,255,0.07); }
+        body { font-family:"Montserrat",sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        nav { display:flex; align-items:center; justify-content:space-between; padding:0 2rem; height:60px; background:var(--red); position:sticky; top:0; z-index:100; }
+        .nav-brand { font-size:1.4rem; font-weight:900; }
+        .nav-back { background:rgba(0,0,0,0.2); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:.4rem 1.2rem; border-radius:8px; font-family:inherit; font-weight:700; cursor:pointer; text-decoration:none; font-size:.85rem; }
+        main { padding:2rem; max-width:900px; margin:0 auto; }
+        h1 { font-size:1.6rem; font-weight:900; margin-bottom:1.5rem; }
+        .card { background:var(--surface); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem; border:1px solid var(--border); }
+        .card h2 { font-size:1rem; font-weight:700; margin-bottom:1rem; opacity:.7; text-transform:uppercase; letter-spacing:1px; }
+        .form-row { display:flex; gap:1rem; }
+        input[type=text] { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:.6rem 1rem; color:#fff; font-family:inherit; font-size:.95rem; }
+        input[type=text]:focus { outline:none; border-color:var(--red); }
+        .btn { background:var(--red); color:#fff; border:none; border-radius:8px; padding:.6rem 1.4rem; font-family:inherit; font-weight:700; cursor:pointer; font-size:.9rem; }
+        .btn:hover { opacity:.85; }
+        .btn-revoke { background:rgba(255,45,85,0.15); color:var(--red); border:1px solid var(--red); border-radius:6px; padding:.3rem .8rem; font-family:inherit; font-weight:700; cursor:pointer; font-size:.8rem; }
+        .btn-revoke:hover { background:var(--red); color:#fff; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:.75rem 1rem; text-align:left; border-bottom:1px solid var(--border); font-size:.9rem; }
+        th { opacity:.5; font-weight:700; font-size:.75rem; text-transform:uppercase; letter-spacing:1px; }
+        .badge { display:inline-block; padding:.2rem .6rem; border-radius:20px; font-size:.75rem; font-weight:700; }
+        .badge-active { background:rgba(52,199,89,0.15); color:#34c759; }
+        .badge-inactive { background:rgba(255,45,85,0.15); color:var(--red); }
+        .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; align-items:center; justify-content:center; }
+        .overlay.open { display:flex; }
+        .modal { background:var(--surface); border-radius:14px; padding:2rem; max-width:500px; width:90%; border:1px solid var(--border); }
+        .modal h3 { font-size:1.1rem; margin-bottom:.5rem; }
+        .modal p { opacity:.6; font-size:.85rem; margin-bottom:1.2rem; }
+        .key-box { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:1rem; font-family:monospace; font-size:.85rem; word-break:break-all; color:#34c759; margin-bottom:1.2rem; }
+        .modal-actions { display:flex; gap:.8rem; justify-content:flex-end; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <span class="nav-brand">Failrun <span style="opacity:.7;font-weight:600;font-size:.85rem;letter-spacing:2px;margin-left:.5rem">ADMIN</span></span>
+    <a href="{{ path('app_failrun_admin_panel') }}" class="nav-back">← Panel</a>
+</nav>
+
+<main>
+    <h1>Gestión de API Keys</h1>
+
+    <div class="card">
+        <h2>Generar nueva clave</h2>
+        <div class="form-row">
+            <input type="text" id="keyName" placeholder="Nombre o descripción (ej: App móvil, Bot Discord…)">
+            <button class="btn" onclick="generateKey()">Generar</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Claves existentes</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Creada</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="keysTable">
+                {% for key in apiKeys %}
+                <tr id="row-{{ key.id }}">
+                    <td>#{{ key.id }}</td>
+                    <td>{{ key.name }}</td>
+                    <td>{{ key.createdAt|date('d/m/Y H:i') }}</td>
+                    <td>
+                        {% if key.isActive %}
+                            <span class="badge badge-active">Activa</span>
+                        {% else %}
+                            <span class="badge badge-inactive">Revocada</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if key.isActive %}
+                            <button class="btn-revoke" onclick="revokeKey({{ key.id }})">Revocar</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" style="opacity:.4;text-align:center;padding:2rem">No hay claves generadas todavía.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<div class="overlay" id="overlay">
+    <div class="modal">
+        <h3>¡Clave generada!</h3>
+        <p>Copia esta clave ahora. No podrás volver a verla.</p>
+        <div class="key-box" id="generatedKey"></div>
+        <div class="modal-actions">
+            <button class="btn" onclick="copyKey()">Copiar</button>
+            <button class="btn" style="background:rgba(255,255,255,0.1)" onclick="closeModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+async function generateKey() {
+    const name = document.getElementById('keyName').value.trim();
+    if (!name) { alert('Introduce un nombre para la clave.'); return; }
+
+    const res = await fetch('{{ path('app_failrun_admin_api_keys_generate') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+    });
+
+    const data = await res.json();
+    if (!data.success) { alert(data.error); return; }
+
+    document.getElementById('generatedKey').textContent = data.key;
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('keyName').value = '';
+
+    const tbody = document.getElementById('keysTable');
+    const emptyRow = tbody.querySelector('td[colspan]');
+    if (emptyRow) emptyRow.closest('tr').remove();
+    tbody.insertAdjacentHTML('afterbegin', `
+        <tr id="row-${data.id}">
+            <td>#${data.id}</td>
+            <td>${data.name}</td>
+            <td>ahora</td>
+            <td><span class="badge badge-active">Activa</span></td>
+            <td><button class="btn-revoke" onclick="revokeKey(${data.id})">Revocar</button></td>
+        </tr>
+    `);
+}
+
+async function revokeKey(id) {
+    if (!confirm('¿Revocar esta API key? Los clientes que la usen dejarán de tener acceso.')) return;
+
+    const res = await fetch(`/failrun/admin/api-keys/${id}/revoke`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.success) { alert(data.error); return; }
+
+    const row = document.getElementById('row-' + id);
+    row.querySelector('td:nth-child(4)').innerHTML = '<span class="badge badge-inactive">Revocada</span>';
+    row.querySelector('td:nth-child(5)').innerHTML = '';
+}
+
+function copyKey() {
+    navigator.clipboard.writeText(document.getElementById('generatedKey').textContent);
+}
+
+function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+}
+</script>
+</body>
+</html>

@@ -24,9 +24,12 @@ security:
             provider: app_user_provider
             stateless: true
             jwt: ~
+            custom_authenticators:
+                - App\Security\ApiKeyAuthenticator
 
     access_control:
         - { path: ^/failrun/admin/login, roles: PUBLIC_ACCESS }
+        - { path: ^/failrun/admin/api-keys, roles: ROLE_ADMIN }
         - { path: ^/failrun/admin, roles: [ROLE_ADMIN, ROLE_MODERATOR] }
         - { path: ^/failrun/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/login, roles: PUBLIC_ACCESS }
