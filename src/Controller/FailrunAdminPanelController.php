@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use App\Entity\ApiKey; //Importamos la entidad ApiKey -> VERIFICACIONES DE API, ETC...
 
 /**
  * Controlador del panel administrativo de Failrun
@@ -27,6 +28,73 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
  */
 final class FailrunAdminPanelController extends AbstractController
 {
+    /**
+     *  !! API ENDPOINTS AND METHODS !!
+     */
+    #[Route('/failrun/admin/api-keys', name: 'app_failrun_admin_api_keys', methods: ['GET'])]
+    public function apiKeys(EntityManagerInterface $em): Response
+    {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Solo administradores.');
+        }
+
+        return $this->render('failrun_admin_panel/api_keys.html.twig', [
+            'apiKeys' => $em->getRepository(ApiKey::class)->findAll(),
+        ]);
+    }
+
+    #[Route('/failrun/admin/api-keys/generate', name: 'app_failrun_admin_api_keys_generate', methods: ['POST'])]
+    public function generateApiKey(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'Solo administradores.'], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $name = trim($data['name'] ?? '');
+
+        if ($name === '') {
+            return $this->json(['error' => 'El nombre es obligatorio.'], 400);
+        }
+
+        $rawKey = bin2hex(random_bytes(32)); // 64 caracteres hexadecimales
+        $hash   = hash('sha256', $rawKey);
+
+        $apiKey = new ApiKey();
+        $apiKey->setName($name);
+        $apiKey->setKeyHash($hash);
+        $apiKey->setCreatedAt(new \DateTimeImmutable());
+        $apiKey->setIsActive(true);
+
+        $em->persist($apiKey);
+        $em->flush();
+
+        return $this->json([
+            'success' => true,
+            'key'     => $rawKey, // Se muestra UNA sola vez, no se vuelve a poder consultar
+            'id'      => $apiKey->getId(),
+            'name'    => $apiKey->getName(),
+        ]);
+    }
+
+    #[Route('/failrun/admin/api-keys/{id}/revoke', name: 'app_failrun_admin_api_keys_revoke', methods: ['POST'])]
+    public function revokeApiKey(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'Solo administradores.'], 403);
+        }
+
+        $apiKey = $em->getRepository(ApiKey::class)->find($id);
+        if (!$apiKey) {
+            return $this->json(['error' => 'API key no encontrada.'], 404);
+        }
+
+        $apiKey->setIsActive(false);
+        $em->flush();
+
+        return $this->json(['success' => true]);
+    }
+
     /**
      * Página de login para administradores
      */
