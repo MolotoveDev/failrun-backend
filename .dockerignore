@@ -1,0 +1,38 @@
+# Control de versiones
+.git
+.gitignore
+.gitattributes
+
+# CI / IDE
+.github
+.idea
+.vscode
+
+# Docker propio (evita recursión)
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# Node (no aplica al backend pero por si acaso)
+node_modules
+
+# Caché y logs locales
+var/cache/*
+var/log/*
+!var/cache/.gitkeep
+!var/log/.gitkeep
+
+# Variables locales (NUNCA deben llegar a la imagen)
+.env.local
+.env.*.local
+.env.test
+.env.dev
+
+# Tests
+tests/
+phpunit.xml*
+.phpunit.result.cache
+
+# Misc
+*.md
+*.log

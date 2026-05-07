@@ -1,42 +1,67 @@
-name: Deploy Backend Symfony
+name: Deploy Backend Symfony to ECS
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
+  workflow_dispatch:    # Permite lanzarlo manualmente desde la pestaña Actions
+
+env:
+  # ====================================================================
+  # AJUSTA ESTAS DOS VARIABLES A TU CASO
+  # ====================================================================
+  AWS_REGION: us-east-1            # Tu región AWS (mira arriba a la derecha en la consola)
+  ECR_REPOSITORY: backend          # Nombre del repo ECR creado en el Paso 1.1
+  # ====================================================================
 
 jobs:
-  deploy:
+  build-and-push:
+    name: Build & push image to ECR
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout codi
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Enviar codi al servidor via rsync
-        uses: burnett01/rsync-deployments@6.0.0
+      # Configurar credenciales AWS.
+      # OJO: en Learner Lab caducan cada pocas horas, hay que actualizar
+      # los tres secrets en GitHub cuando reinicies el lab.
+      - name: Configurar credenciales AWS (Learner Lab)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          switches: -avz --delete
-            --exclude '.git'
-            --exclude '.env'
-            --exclude '.env.local'
-            --exclude 'var/'
-            --exclude 'vendor/'
-            --exclude 'config/jwt/private.pem'
-            --exclude 'config/secrets/prod/prod.decrypt.private.php'
-          path: ./
-          remote_path: /var/www/backend
-          remote_host: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_HOST || secrets.DEV_TARGET_HOST }}
-          remote_user: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_USER || secrets.DEV_TARGET_USER }}
-          remote_key: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_KEY || secrets.DEV_TARGET_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Instal·lar dependències i netejar cache
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_HOST || secrets.DEV_TARGET_HOST }}
-          username: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_USER || secrets.DEV_TARGET_USER }}
-          key: ${{ github.ref == 'refs/heads/main' && secrets.PROD_TARGET_KEY || secrets.DEV_TARGET_KEY }}
-          script: |
-            cd /var/www/backend
-            composer install --no-dev --optimize-autoloader
-            php bin/console cache:clear --env=prod
-            sudo systemctl restart apache2
+      - name: Login en Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & push de la imagen Docker
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            .
+
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Resumen
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          echo "Imagen subida a ECR:"
+          echo "  $ECR_REGISTRY/$ECR_REPOSITORY:latest"
+          echo "  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      # ----------------------------------------------------------------
+      # FASE 2 (la añadiremos al final del despliegue):
+      # - Render new task definition con la imagen nueva
+      # - aws ecs update-service --force-new-deployment
+      # Por ahora, solo build + push.
+      # ----------------------------------------------------------------
