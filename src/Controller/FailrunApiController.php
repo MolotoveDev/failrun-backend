@@ -586,8 +586,7 @@ final class FailrunApiController extends AbstractController
     {
         $sql = "SELECT 
                     (SELECT COUNT(*) FROM user) AS total_users,
-                    (SELECT COUNT(*) FROM clips) AS total_clips,
-                    (SELECT COUNT(*) FROM user_request) AS total_requests;";
+                    (SELECT COUNT(*) FROM clips) AS total_clips;";
 
         $result = $em->getConnection()->executeQuery($sql)->fetchAssociative();
         return new JsonResponse(['status' => 'success', 'data' => $result], 200);
