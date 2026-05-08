@@ -1,0 +1,27 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Failrun API
+            description: REST API for the Failrun platform
+            version: 1.0.0
+        components:
+            securitySchemes:
+                Bearer:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+                ApiKey:
+                    type: apiKey
+                    in: header
+                    name: X-API-KEY
+    areas:
+        # Public area: only the API-key endpoints meant for external consumers (Vue frontend)
+        default:
+            path_patterns:
+                - ^/failrun/api/key-test$
+                - ^/failrun/api/get-random-clip
+                - ^/failrun/api/get-top-rated-clip
+        # Admin area: all API endpoints
+        admin:
+            path_patterns:
+                - ^/failrun/api

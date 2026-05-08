@@ -1,0 +1,31 @@
+# Public Swagger UI — only API key endpoints (accessible by anyone)
+app.swagger_ui:
+    path: /api/doc
+    methods: GET
+    defaults:
+        _controller: nelmio_api_doc.controller.swagger_ui
+        area: default
+
+# Admin Swagger UI — all endpoints (under /failrun/admin so session firewall handles auth)
+app.swagger_ui_admin:
+    path: /failrun/admin/api-doc
+    methods: GET
+    defaults:
+        _controller: nelmio_api_doc.controller.swagger_ui
+        area: admin
+
+# JSON export — public area
+app.swagger:
+    path: /api/doc.json
+    methods: GET
+    defaults:
+        _controller: nelmio_api_doc.controller.swagger
+        area: default
+
+# JSON export — admin area
+app.swagger_admin:
+    path: /failrun/admin/api-doc.json
+    methods: GET
+    defaults:
+        _controller: nelmio_api_doc.controller.swagger
+        area: admin
