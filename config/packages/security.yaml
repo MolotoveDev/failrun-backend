@@ -40,4 +40,8 @@ security:
         - { path: ^/failrun/api/get-clip-info, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/get-random-clips, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/get-top-rated-clips, roles: PUBLIC_ACCESS }
+        - { path: ^/failrun/api/get-random-clip, roles: ROLE_API }
+        - { path: ^/failrun/api/get-top-rated-clip, roles: ROLE_API }
+        - { path: ^/failrun/api/get-stats, roles: ROLE_API }
+        - { path: ^/failrun/api/get-recent-clips, roles: ROLE_API }
         - { path: ^/failrun/api, roles: IS_AUTHENTICATED_FULLY }

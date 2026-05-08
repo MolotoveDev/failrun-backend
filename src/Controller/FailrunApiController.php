@@ -523,4 +523,87 @@ final class FailrunApiController extends AbstractController
         $result = $em->getConnection()->executeQuery($sql, ['totalClips' => $totalClips], ['totalClips' => \Doctrine\DBAL\ParameterType::INTEGER])->fetchAllAssociative();
         return new JsonResponse(['status' => 'success', 'data' => $result], 200);
     }
+
+    #[Route('/failrun/api/delete-user-clip/{clipId}', name: 'app_failrun_api_delete_user_clip', methods: ['DELETE'])]
+    public function deleteUserClip(int $clipId, Security $security, EntityManagerInterface $em): JsonResponse
+    {
+        $user = $security->getUser();
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        $clip = $em->getRepository(Clips::class)->find($clipId);
+        if (!$clip) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Clip not found'], 404);
+        }
+
+        // Check if the user is the owner of the clip or has ROLE_ADMIN or ROLE_MODERATOR
+        if ($clip->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        $em->remove($clip);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success', 'message' => 'Clip deleted successfully'], 200);
+    }
+    /**
+     * PUBLIC ENDPOINTS (API KEY REQUIRED)
+     */
+
+    #[Route('/failrun/api/get-top-rated-clip/{totalClips}', name: 'app_failrun_api_get_top_rated_clip', methods: ['GET'])]
+    public function getTopRatedClip(int $totalClips, EntityManagerInterface $em): JsonResponse
+    {
+        $sql = "SELECT c.clip_link, u.username, AVG(ur.rate) AS average_rate
+                FROM clips c
+                JOIN user_rate ur ON c.id = ur.clip_id_id
+                JOIN user u ON c.user_id_id = u.id
+                WHERE c.clip_status = 1
+                GROUP BY c.id, u.username
+                ORDER BY average_rate DESC
+                LIMIT :totalClips;";
+
+        $result = $em->getConnection()->executeQuery($sql, ['totalClips' => $totalClips], ['totalClips' => \Doctrine\DBAL\ParameterType::INTEGER])->fetchAllAssociative();
+        return new JsonResponse(['status' => 'success', 'data' => $result], 200);
+    }
+
+    #[Route('/failrun/api/get-random-clip/{totalClips}', name: 'app_failrun_api_get_random_clip', methods: ['GET'])]
+    public function getRandomClip(int $totalClips, EntityManagerInterface $em): JsonResponse
+    {
+        $sql = "SELECT c.clip_link, u.username
+                FROM clips c
+                JOIN user u ON c.user_id_id = u.id
+                WHERE c.clip_status = 1
+                ORDER BY RAND()
+                LIMIT :totalClips;";
+
+        $result = $em->getConnection()->executeQuery($sql, ['totalClips' => $totalClips], ['totalClips' => \Doctrine\DBAL\ParameterType::INTEGER])->fetchAllAssociative();
+        return new JsonResponse(['status' => 'success', 'data' => $result], 200);
+    }
+
+    #[Route('/failrun/api/get-stats', name: 'app_failrun_api_get_stats', methods: ['GET'])]
+    public function getStats(EntityManagerInterface $em): JsonResponse
+    {
+        $sql = "SELECT 
+                    (SELECT COUNT(*) FROM user) AS total_users,
+                    (SELECT COUNT(*) FROM clips) AS total_clips,
+                    (SELECT COUNT(*) FROM user_request) AS total_requests;";
+
+        $result = $em->getConnection()->executeQuery($sql)->fetchAssociative();
+        return new JsonResponse(['status' => 'success', 'data' => $result], 200);
+    }
+
+    #[Route('/failrun/api/get-recent-clips/{totalClips}', name: 'app_failrun_api_get_recent_clips', methods: ['GET'])]
+    public function getRecentClips(int $totalClips, EntityManagerInterface $em): JsonResponse
+    {
+        $sql = "SELECT c.clip_link, u.username
+                FROM clips c
+                JOIN user u ON c.user_id_id = u.id
+                WHERE c.clip_status = 1
+                ORDER BY c.created_at DESC
+                LIMIT :totalClips;";
+
+        $result = $em->getConnection()->executeQuery($sql, ['totalClips' => $totalClips], ['totalClips' => \Doctrine\DBAL\ParameterType::INTEGER])->fetchAllAssociative();
+        return new JsonResponse(['status' => 'success', 'data' => $result], 200);
+    }
 }
