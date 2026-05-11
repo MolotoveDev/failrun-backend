@@ -51,8 +51,6 @@ RUN composer install \
 # 6) Resto de la app
 COPY . .
 
-RUN printf "APP_ENV=prod\nAPP_DEBUG=0\nAPP_SECRET=placeholder\nDATABASE_URL=placeholder\n" > .env
-
 # 7) Autoload optimizado + scripts post-install
 RUN composer dump-autoload --classmap-authoritative --no-dev \
     && composer run-script --no-dev post-install-cmd || true
