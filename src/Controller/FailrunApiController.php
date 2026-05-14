@@ -124,23 +124,28 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/login', name: 'app_failrun_api_login', methods: ['POST'])]
     public function login(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em, JWTTokenManagerInterface $jwtManager): JsonResponse
     {
-        //Get login data through JSON, decode it and get user from email.
-        $data = json_decode($request->getContent(), true); 
-
-        $user = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
-
-        //Security check: if user doesn't exist or password is invalid, return error response.
-        if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Invalid credentials'], 401);
+        try {
+            $data = json_decode($request->getContent(), true); 
+            $user = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+    
+            if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Invalid credentials'], 401);
+            }
+    
+            $token = $jwtManager->create($user);
+    
+            return new JsonResponse([
+                'status' => 'success',
+                'token' => $token
+            ], 200);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
         }
-
-        //If everything checks, create JWT token for the user and return it in the response.
-        $token = $jwtManager->create($user);
-
-        return new JsonResponse([
-            'status' => 'success',
-            'token' => $token
-        ], 200);
     }
 
     #[OA\Get(
