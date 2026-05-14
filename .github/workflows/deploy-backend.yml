@@ -82,10 +82,3 @@ jobs:
           echo "Imagen subida a ECR:"
           echo "  $ECR_REGISTRY/$ECR_REPOSITORY:latest"
           echo "  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-      # ----------------------------------------------------------------
-      # FASE 2 (la añadiremos al final del despliegue):
-      # - Render new task definition con la imagen nueva
-      # - aws ecs update-service --force-new-deployment
-      # Por ahora, solo build + push.
-      # ----------------------------------------------------------------
