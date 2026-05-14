@@ -124,37 +124,19 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/login', name: 'app_failrun_api_login', methods: ['POST'])]
     public function login(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em, JWTTokenManagerInterface $jwtManager): JsonResponse
     {
-        try {
-            // DEBUG temporal
-            $params = $em->getConnection()->getParams();
-            unset($params['password']);
-            return new JsonResponse([
-                'debug' => true,
-                'params' => $params,
-                'env_database_url' => getenv('DATABASE_URL'),
-            ]);
+        $data = json_decode($request->getContent(), true); 
+        $user = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
     
-            $data = json_decode($request->getContent(), true); 
-            $user = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
-    
-            if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
-                return new JsonResponse(['status' => 'error', 'message' => 'Invalid credentials'], 401);
-            }
-    
-            $token = $jwtManager->create($user);
-    
-            return new JsonResponse([
-                'status' => 'success',
-                'token' => $token
-            ], 200);
-        } catch (\Throwable $e) {
-            return new JsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ], 500);
+        if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Invalid credentials'], 401);
         }
+    
+        $token = $jwtManager->create($user);
+    
+        return new JsonResponse([
+            'status' => 'success',
+            'token' => $token
+        ], 200);
     }
 
     #[OA\Get(
