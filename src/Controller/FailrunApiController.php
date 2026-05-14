@@ -125,6 +125,15 @@ final class FailrunApiController extends AbstractController
     public function login(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em, JWTTokenManagerInterface $jwtManager): JsonResponse
     {
         try {
+            // DEBUG temporal
+            $params = $em->getConnection()->getParams();
+            unset($params['password']);
+            return new JsonResponse([
+                'debug' => true,
+                'params' => $params,
+                'env_database_url' => getenv('DATABASE_URL'),
+            ]);
+    
             $data = json_decode($request->getContent(), true); 
             $user = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
     
