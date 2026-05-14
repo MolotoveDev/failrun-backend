@@ -151,12 +151,7 @@ final class FailrunApiController extends AbstractController
     )]
     #[Route('/failrun/api/get-user-info', name: 'app_failrun_api_get_user_info', methods: ['GET'])]
     public function getUserInfo(Security $security): JsonResponse
-    {
-        return new JsonResponse([
-        'headers' => $request->headers->all(),
-        'auth_header' => $request->headers->get('Authorization'),
-        ]);
-        
+    {       
         $user = $security->getUser(); //Fetch user info from token
 
         // Return user info in the response.
