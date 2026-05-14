@@ -5,7 +5,7 @@ doctrine:
         options:
             !php/const PDO::MYSQL_ATTR_SSL_CA: '/etc/ssl/certs/ca-certificates.crt'
             !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: false
-            !php/const PDO::MYSQL_ATTR_SSL_CIPHER: 'DEFAULT'
+            !php/const PDO::MYSQL_ATTR_INIT_COMMAND: 'SET NAMES utf8mb4'
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
