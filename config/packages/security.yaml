@@ -26,6 +26,7 @@ security:
             jwt: ~
             custom_authenticators:
                 - App\Security\ApiKeyAuthenticator
+            entry_point: lexik_jwt_authentication.security.entry_point
 
     access_control:
         - { path: ^/failrun/admin/login, roles: PUBLIC_ACCESS }
