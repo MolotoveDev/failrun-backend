@@ -50,15 +50,29 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Forzar nuevo despliegue en ECS
-        env:
-          AWS_REGION: ${{ env.AWS_REGION }}
+      - name: Descargar task definition actual
         run: |
-          aws ecs update-service \
-            --cluster backend-cluster \
-            --service backend-service \
-            --force-new-deployment \
-            --region $AWS_REGION
+          aws ecs describe-task-definition \
+            --task-definition backend-task \
+            --query taskDefinition \
+            --region ${{ env.AWS_REGION }} \
+            > task-definition.json
+
+      - name: Actualizar imagen en task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: backend
+          image: ${{ steps.ecr-login.outputs.registry }}/backend:${{ github.sha }}
+
+      - name: Desplegar nueva task definition en ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: backend-service
+          cluster: backend-cluster
+          wait-for-service-stability: false
 
       - name: Resumen
         env:
@@ -68,7 +82,6 @@ jobs:
           echo "Imagen subida a ECR:"
           echo "  $ECR_REGISTRY/$ECR_REPOSITORY:latest"
           echo "  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          echo "Nuevo despliegue forzado en ECS."
 
       # ----------------------------------------------------------------
       # FASE 2 (la añadiremos al final del despliegue):
