@@ -52,8 +52,7 @@ RUN composer install \
 COPY . .
 
 # 7) Autoload optimizado + scripts post-install
-RUN composer dump-autoload --classmap-authoritative --no-dev \
-    && composer run-script --no-dev post-install-cmd || true
+RUN composer dump-autoload --classmap-authoritative --no-dev
 
 # 8) Permisos de var/ (cache + logs en runtime)
 RUN mkdir -p var/cache var/log \
