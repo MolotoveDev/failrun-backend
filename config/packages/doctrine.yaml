@@ -1,11 +1,6 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
-        driver: pdo_mysql
-        options:
-            !php/const PDO::MYSQL_ATTR_SSL_CA: '/etc/ssl/certs/ca-certificates.crt'
-            !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: false
-            !php/const PDO::MYSQL_ATTR_INIT_COMMAND: 'SET NAMES utf8mb4'
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -24,13 +19,10 @@ doctrine:
                 alias: App
         controller_resolver:
             auto_mapping: false
-
 when@test:
     doctrine:
         dbal:
-            # "TEST_TOKEN" is typically set by ParaTest
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
-
 when@prod:
     doctrine:
         orm:
@@ -42,7 +34,6 @@ when@prod:
             result_cache_driver:
                 type: pool
                 pool: doctrine.result_cache_pool
-
     framework:
         cache:
             pools:
