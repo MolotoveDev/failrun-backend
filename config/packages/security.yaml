@@ -23,26 +23,39 @@ security:
             lazy: true
             provider: app_user_provider
             stateless: true
-            jwt: ~
+            # El JWT se valida manualmente en cada endpoint del controller
+            # mediante JWTEncoderInterface (helper authenticateJwtUser).
+            # El ApiKeyAuthenticator sigue activo para endpoints con X-API-KEY.
             custom_authenticators:
                 - App\Security\ApiKeyAuthenticator
 
     access_control:
+        # Admin panel: gestionado por el firewall admin (form_login + sesión)
         - { path: ^/failrun/admin/login, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/admin/api-keys, roles: ROLE_ADMIN }
         - { path: ^/failrun/admin, roles: [ROLE_ADMIN, ROLE_MODERATOR] }
+
+        # Endpoints públicos de la API (sin autenticación)
         - { path: ^/failrun/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/test, roles: PUBLIC_ACCESS }
-        - { path: ^/failrun/api/key-test, roles: ROLE_API }
         - { path: ^/failrun/api/get-games, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/get-game-clips, roles: PUBLIC_ACCESS }
         - { path: ^/failrun/api/get-clip-info, roles: PUBLIC_ACCESS }
-        - { path: ^/failrun/api/get-random-clips, roles: PUBLIC_ACCESS }
-        - { path: ^/failrun/api/get-top-rated-clips, roles: PUBLIC_ACCESS }
+
+        # Endpoints que requieren API Key (X-API-KEY header)
+        - { path: ^/failrun/api/key-test, roles: ROLE_API }
+        - { path: ^/failrun/api/get-random-clips, roles: ROLE_API }
+        - { path: ^/failrun/api/get-top-rated-clips, roles: ROLE_API }
         - { path: ^/failrun/api/get-random-clip, roles: ROLE_API }
         - { path: ^/failrun/api/get-top-rated-clip, roles: ROLE_API }
         - { path: ^/failrun/api/get-stats, roles: ROLE_API }
         - { path: ^/failrun/api/get-recent-clips, roles: ROLE_API }
+
+        # Documentación OpenAPI pública
         - { path: ^/api/doc, roles: PUBLIC_ACCESS }
+
+        # El resto de endpoints (los JWT) son PUBLIC_ACCESS a nivel de firewall.
+        # La validación del JWT se hace dentro del controller con el helper
+        # authenticateJwtUser. Si no hay token válido, el controller devuelve 401.
         - { path: ^/failrun/api, roles: PUBLIC_ACCESS }
