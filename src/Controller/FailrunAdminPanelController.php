@@ -496,14 +496,22 @@ final class FailrunAdminPanelController extends AbstractController
                     'X-Title'       => 'Failrun Admin Panel',
                 ],
                 'json' => [
-                    'model'    => 'meta-llama/llama-3.1-8b-instruct:free',
+                    'model'    => 'mistralai/mistral-7b-instruct:free',
                     'messages' => $messages,
                 ],
                 'timeout' => 30,
             ]);
 
-            $result = $response->toArray();
-            $reply  = $result['choices'][0]['message']['content'] ?? 'Sin respuesta del modelo.';
+            $statusCode = $response->getStatusCode();
+            $body       = $response->getContent(false); // false = no lanza en 4xx/5xx
+            $result     = json_decode($body, true);
+
+            if ($statusCode !== 200) {
+                $errMsg = $result['error']['message'] ?? $body;
+                return $this->json(['error' => "OpenRouter ({$statusCode}): {$errMsg}"], 502);
+            }
+
+            $reply = $result['choices'][0]['message']['content'] ?? 'Sin respuesta del modelo.';
 
             return $this->json(['reply' => $reply]);
 
