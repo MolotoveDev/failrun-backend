@@ -26,7 +26,6 @@ security:
             custom_authenticators:
                 - App\Security\JwtAuthenticator
                 - App\Security\ApiKeyAuthenticator
-            entry_point: App\Security\JwtAuthenticator
 
     access_control:
         - { path: ^/failrun/admin/login, roles: PUBLIC_ACCESS }
