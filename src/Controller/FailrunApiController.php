@@ -151,8 +151,12 @@ final class FailrunApiController extends AbstractController
     )]
     #[Route('/failrun/api/get-user-info', name: 'app_failrun_api_get_user_info', methods: ['GET'])]
     public function getUserInfo(Security $security): JsonResponse
-    {       
-        $user = $security->getUser(); //Fetch user info from token
+    {     
+        return new JsonResponse([
+            'auth_header' => $request->headers->get('Authorization'),
+            'token_extracted' => $extractor->extract($request),
+        ]);
+        /*$user = $security->getUser(); //Fetch user info from token
 
         // Return user info in the response.
         return new JsonResponse([
@@ -164,7 +168,7 @@ final class FailrunApiController extends AbstractController
                 'register_date' => $user->getRegisterDate()->format('Y-m-d H:i:s'),
                 'profilePic' => $user->getProfilePic(),
             ]
-        ], 200);
+        ], 200);*/
     }
 
     #[OA\Post(
