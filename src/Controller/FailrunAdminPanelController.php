@@ -496,7 +496,7 @@ final class FailrunAdminPanelController extends AbstractController
                     'X-Title'       => 'Failrun Admin Panel',
                 ],
                 'json' => [
-                    'model'    => 'mistralai/mistral-7b-instruct:free',
+                    'model'    => 'meta-llama/llama-3.3-70b-instruct:free',
                     'messages' => $messages,
                 ],
                 'timeout' => 30,
