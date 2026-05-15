@@ -10,26 +10,54 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use App\Entity\User;
 use App\Entity\UserRequest;
 use App\Entity\UserRate;
 use App\Entity\Games;
 use App\Entity\Clips;
-use OpenApi\Attributes as OA;
 use App\Repository\UserRepository;
-use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use OpenApi\Attributes as OA;
 
 final class FailrunApiController extends AbstractController
 {
-    //Default controller route - DO NOT USE!
-    /*#[Route('/failrun/api', name: 'app_failrun_api')]
-    public function index(): Response
+    /**
+     * Helper privado: extrae y valida el JWT del header Authorization.
+     * Devuelve el User autenticado o null si el token es inválido/faltante.
+     *
+     * Centralizar esto aquí evita duplicar la lógica de extracción y decodificación
+     * del JWT en cada endpoint protegido.
+     */
+    private function authenticateJwtUser(
+        Request $request,
+        JWTEncoderInterface $jwtEncoder,
+        UserRepository $userRepository
+    ): ?User {
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return null;
+        }
+
+        try {
+            $payload = $jwtEncoder->decode(substr($authHeader, 7));
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        if (empty($payload['username'])) {
+            return null;
+        }
+
+        return $userRepository->findOneBy(['username' => $payload['username']]);
+    }
+
+    /**
+     * Helper privado: comprueba si el usuario tiene alguno de los roles indicados.
+     */
+    private function userHasAnyRole(User $user, array $roles): bool
     {
-        return $this->render('failrun_api/index.html.twig', [
-            'controller_name' => 'FailrunApiController',
-        ]);
-    }*/
+        return !empty(array_intersect($user->getRoles(), $roles));
+    }
 
     #[OA\Get(
         path: '/failrun/api/test',
@@ -86,7 +114,7 @@ final class FailrunApiController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
         //Create user entity and set data from request. We also set the registration date and default role for the user.
-        $user = new User(); 
+        $user = new User();
         $user->setUsername($data['username']);
         $user->setEmail($data['email']);
         $user->setRegisterDate(new \DateTime());
@@ -126,15 +154,15 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/login', name: 'app_failrun_api_login', methods: ['POST'])]
     public function login(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em, JWTTokenManagerInterface $jwtManager): JsonResponse
     {
-        $data = json_decode($request->getContent(), true); 
+        $data = json_decode($request->getContent(), true);
         $user = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
-    
+
         if (!$user || !$passwordHasher->isPasswordValid($user, $data['password'])) {
             return new JsonResponse(['status' => 'error', 'message' => 'Invalid credentials'], 401);
         }
-    
+
         $token = $jwtManager->create($user);
-    
+
         return new JsonResponse([
             'status' => 'success',
             'token' => $token
@@ -151,25 +179,14 @@ final class FailrunApiController extends AbstractController
             new OA\Response(response: 401, description: 'Unauthorized'),
         ]
     )]
-    #[Route('/failrun/api/get-user-info', methods: ['GET'])]
+    #[Route('/failrun/api/get-user-info', name: 'app_failrun_api_get_user_info', methods: ['GET'])]
     public function getUserInfo(Request $request, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
-        $authHeader = $request->headers->get('Authorization');
-        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
-            return new JsonResponse(['status' => 'error', 'message' => 'No token'], 401);
-        }
-        
-        try {
-            $payload = $jwtEncoder->decode(substr($authHeader, 7));
-        } catch (\Exception $e) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Invalid token'], 401);
-        }
-        
-        $user = $userRepository->findOneBy(['username' => $payload['username']]);
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
         if (!$user) {
-            return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
-    
+
         return new JsonResponse([
             'status' => 'success',
             'data' => [
@@ -204,15 +221,18 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/send-user-request', name: 'app_failrun_api_send_user_request', methods: ['POST'])]
-    public function sendUserRequest(Request $request, Security $security, EntityManagerInterface $em): JsonResponse
+    public function sendUserRequest(Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
-        //Stablish user and data objects
-        $user = $security->getUser();
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
         $data = json_decode($request->getContent(), true);
 
         $userRequest = new UserRequest();
         $userRequest->setUserId($user);
-        
+
         //Exception managment: If no title or description is provided, return an error response. Both fields are required to create a user request.
         if (!empty($data['title'])) {
             $userRequest->setTitleRequest($data['title']);
@@ -246,21 +266,25 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/get-user-requests', name: 'app_failrun_api_get_user_requests', methods: ['GET'])]
-    public function getUserRequests(Security $security, EntityManagerInterface $em): JsonResponse
+    public function getUserRequests(Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
-        $user = $security->getUser();
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
         $requests = $em->getRepository(UserRequest::class)->findBy(['user_id' => $user]);
 
         // For every request, we create an array with the relevant data to return it in the response. We also include the isActive field to indicate if the request is still active (pending) or if it has been accepted/rejected and should no longer be shown in the user's request list.
         $data = [];
-        foreach ($requests as $request) {
+        foreach ($requests as $userRequest) {
             $data[] = [
-                'id' => $request->getId(),
-                'title' => $request->getTitleRequest(),
-                'description' => $request->getDescriptionRequest(),
-                'date' => $request->getDateRequest()->format('Y-m-d H:i:s'),
-                'status' => $request->getStatusRequest(),
-                'isActive' => $request->getIsActive(), // This field reference if the request has been filed by the user so the frontend can decide if show it or not in the user requests list. It will be set to false (0) when the request is accepted and the user can no longer see it in their list, but it will be still stored in the database for future reference.
+                'id' => $userRequest->getId(),
+                'title' => $userRequest->getTitleRequest(),
+                'description' => $userRequest->getDescriptionRequest(),
+                'date' => $userRequest->getDateRequest()->format('Y-m-d H:i:s'),
+                'status' => $userRequest->getStatusRequest(),
+                'isActive' => $userRequest->getIsActive(), // This field reference if the request has been filed by the user so the frontend can decide if show it or not in the user requests list. It will be set to false (0) when the request is accepted and the user can no longer see it in their list, but it will be still stored in the database for future reference.
             ];
         }
 
@@ -327,7 +351,7 @@ final class FailrunApiController extends AbstractController
 
         return new JsonResponse(['status' => 'success', 'data' => $data], 200);
     }
-  
+
     #[OA\Get(
         path: '/failrun/api/get-clip-info/{clipId}',
         summary: 'Get clip details including ratings and comments',
@@ -346,14 +370,14 @@ final class FailrunApiController extends AbstractController
         $clip = $em->getRepository(Clips::class)->find($clipId);
         $conn = $em->getConnection();
 
-        // If ther's no clip before executing the query, we return an error response indicating that the clip was not found. 
+        // If ther's no clip before executing the query, we return an error response indicating that the clip was not found.
         // This is to avoid executing the query with an invalid clipId and to provide a clear error message to the frontend.
         if (!$clip) {
             return new JsonResponse(['status' => 'error', 'message' => 'Clip not found'], 404);
         }
 
-        // When we go to the clip view, we need to fetch not only the clip info, but also the ratings and comments from the users that have rated the clip. 
-        // To do this, we execute a custom SQL query that joins the clips, user_rate and user tables to get all the relevant information in a single query. 
+        // When we go to the clip view, we need to fetch not only the clip info, but also the ratings and comments from the users that have rated the clip.
+        // To do this, we execute a custom SQL query that joins the clips, user_rate and user tables to get all the relevant information in a single query.
         // We order the results by rating in descending order so the highest rated comments appear first in the clip view.
         $sql = "SELECT
                 c.*,
@@ -373,9 +397,9 @@ final class FailrunApiController extends AbstractController
                           FROM user_rate ur
                           LEFT JOIN clips c ON c.id = ur.clip_id_id
                           WHERE clip_id_id = :clipId;";
-        
-        
-        // We execute the query with the provided clipId and fetch all the results as an associative array. 
+
+
+        // We execute the query with the provided clipId and fetch all the results as an associative array.
         // This will give us an array of comments and ratings for the clip, along with the clip info and the username of the users that rated it.
         $result  = $conn->executeQuery($sql, ['clipId' => $clipId])->fetchAllAssociative();
         $average = $conn->executeQuery($bufferAverage, ['clipId' => $clipId])->fetchAssociative();
@@ -413,10 +437,10 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/rate-clip/{clipId}', name: 'app_failrun_api_rate_clip', methods: ['PUT'])]
-    public function rateClip(int $clipId, Request $request, Security $security, EntityManagerInterface $em): JsonResponse
+    public function rateClip(int $clipId, Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
         // Validate user
-        $user = $security->getUser();
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
         if (!$user) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
@@ -468,10 +492,10 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/delete-rate/{rateId}', name: 'app_failrun_api_delete_rate', methods: ['DELETE'])]
-    public function deleteRate(int $rateId, Security $security, EntityManagerInterface $em): JsonResponse
+    public function deleteRate(int $rateId, Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
         // Validate user
-        $user = $security->getUser();
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
         if (!$user) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
@@ -483,7 +507,7 @@ final class FailrunApiController extends AbstractController
         }
 
         // Check if the user is the owner of the rating or has ROLE_ADMIN or ROLE_MODERATOR
-        if ($rating->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+        if ($rating->getUserId() !== $user && !$this->userHasAnyRole($user, ['ROLE_ADMIN', 'ROLE_MODERATOR'])) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
 
@@ -509,10 +533,10 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/remove-clip/{clipId}', name: 'app_failrun_api_remove_clip', methods: ['DELETE'])]
-    public function removeClip(int $clipId, Security $security, EntityManagerInterface $em): JsonResponse
+    public function removeClip(int $clipId, Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
         // Validate user
-        $user = $security->getUser();
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
         if (!$user) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
@@ -524,7 +548,7 @@ final class FailrunApiController extends AbstractController
         }
 
         // Check if the user is the owner of the clip or has ROLE_ADMIN or ROLE_MODERATOR
-        if ($clip->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+        if ($clip->getUserId() !== $user && !$this->userHasAnyRole($user, ['ROLE_ADMIN', 'ROLE_MODERATOR'])) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
 
@@ -534,7 +558,7 @@ final class FailrunApiController extends AbstractController
 
         return new JsonResponse(['status' => 'success', 'message' => 'Clip removed successfully'], 200);
     }
-  
+
     #[OA\Get(
         path: '/failrun/api/get-user-clips/{userId}',
         summary: 'Get all clips submitted by a specific user',
@@ -549,8 +573,13 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/get-user-clips/{userId}', name: 'app_failrun_api_get_user_clips', methods: ['GET'])]
-    public function getUserClips(int $userId, EntityManagerInterface $em): JsonResponse
+    public function getUserClips(int $userId, Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
+        $authUser = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
+        if (!$authUser) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
         $clips = $em->getRepository(Clips::class)->findBy(['user_id' => $userId]);
 
         $data = [];
@@ -595,10 +624,10 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/submit-clip', name: 'app_failrun_api_submit_clip', methods: ['POST'])]
-    public function submitClip(Request $request, Security $security, EntityManagerInterface $em): JsonResponse
+    public function submitClip(Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
         //We get the userid
-        $user = $security->getUser();
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
         if (!$user) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
@@ -609,7 +638,7 @@ final class FailrunApiController extends AbstractController
             return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: gameId'], 400);
         }
 
-        if(!isset($data['clipTitle'])) {
+        if (!isset($data['clipTitle'])) {
             return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: clipTitle'], 400);
         }
 
@@ -619,8 +648,7 @@ final class FailrunApiController extends AbstractController
 
         if (!isset($data['clipDescription'])) {
             $clipDescription = null; //Clip description is optional, so we set it to null if it's not provided.
-        }
-        else {
+        } else {
             $clipDescription = $data['clipDescription'];
         }
 
@@ -673,9 +701,9 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/modify-clip/{clipId}', name: 'app_failrun_api_modify_clip', methods: ['PUT'])]
-    public function modifyClip(int $clipId, Request $request, Security $security, EntityManagerInterface $em): JsonResponse
+    public function modifyClip(int $clipId, Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
-        $user = $security->getUser();
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
         if (!$user) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
@@ -686,7 +714,7 @@ final class FailrunApiController extends AbstractController
         }
 
         // Check if the user is the owner of the clip or has ROLE_ADMIN or ROLE_MODERATOR
-        if ($clip->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+        if ($clip->getUserId() !== $user && !$this->userHasAnyRole($user, ['ROLE_ADMIN', 'ROLE_MODERATOR'])) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
 
@@ -696,7 +724,7 @@ final class FailrunApiController extends AbstractController
             return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: gameId'], 400);
         }
 
-        if(!isset($data['clipTitle'])) {
+        if (!isset($data['clipTitle'])) {
             return new JsonResponse(['status' => 'error', 'message' => 'Missing required field: clipTitle'], 400);
         }
 
@@ -706,8 +734,7 @@ final class FailrunApiController extends AbstractController
 
         if (!isset($data['clipDescription'])) {
             $clipDescription = null; //Clip description is optional, so we set it to null if it's not provided.
-        }
-        else {
+        } else {
             $clipDescription = $data['clipDescription'];
         }
 
@@ -742,24 +769,24 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/archive-request/{requestId}', name: 'app_failrun_api_archive_request', methods: ['PUT'])]
-    public function archiveRequest(int $requestId, Security $security, EntityManagerInterface $em): JsonResponse
+    public function archiveRequest(int $requestId, Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
-        $user = $security->getUser();
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
         if (!$user) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
 
-        $request = $em->getRepository(UserRequest::class)->find($requestId);
-        if (!$request) {
+        $userRequest = $em->getRepository(UserRequest::class)->find($requestId);
+        if (!$userRequest) {
             return new JsonResponse(['status' => 'error', 'message' => 'Request not found'], 404);
         }
 
         // Check if the user is the owner of the request or has ROLE_ADMIN or ROLE_MODERATOR
-        if ($request->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+        if ($userRequest->getUserId() !== $user && !$this->userHasAnyRole($user, ['ROLE_ADMIN', 'ROLE_MODERATOR'])) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
 
-        $request->setIsActive(0); //Set isActive to false (0) to archive the request and hide it from the user's request list.
+        $userRequest->setIsActive(0); //Set isActive to false (0) to archive the request and hide it from the user's request list.
 
         $em->flush();
 
@@ -837,9 +864,9 @@ final class FailrunApiController extends AbstractController
         ]
     )]
     #[Route('/failrun/api/delete-user-clip/{clipId}', name: 'app_failrun_api_delete_user_clip', methods: ['DELETE'])]
-    public function deleteUserClip(int $clipId, Security $security, EntityManagerInterface $em): JsonResponse
+    public function deleteUserClip(int $clipId, Request $request, EntityManagerInterface $em, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
     {
-        $user = $security->getUser();
+        $user = $this->authenticateJwtUser($request, $jwtEncoder, $userRepository);
         if (!$user) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
@@ -850,7 +877,7 @@ final class FailrunApiController extends AbstractController
         }
 
         // Check if the user is the owner of the clip or has ROLE_ADMIN or ROLE_MODERATOR
-        if ($clip->getUserId() !== $user && !$security->isGranted('ROLE_ADMIN') && !$security->isGranted('ROLE_MODERATOR')) {
+        if ($clip->getUserId() !== $user && !$this->userHasAnyRole($user, ['ROLE_ADMIN', 'ROLE_MODERATOR'])) {
             return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], 401);
         }
 
@@ -932,7 +959,7 @@ final class FailrunApiController extends AbstractController
     #[Route('/failrun/api/get-stats', name: 'app_failrun_api_get_stats', methods: ['GET'])]
     public function getStats(EntityManagerInterface $em): JsonResponse
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     (SELECT COUNT(*) FROM user) AS total_users,
                     (SELECT COUNT(*) FROM clips) AS total_clips;";
 
