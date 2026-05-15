@@ -506,6 +506,10 @@ final class FailrunAdminPanelController extends AbstractController
             $body       = $response->getContent(false); // false = no lanza en 4xx/5xx
             $result     = json_decode($body, true);
 
+            if ($statusCode === 429) {
+                return $this->json(['error' => 'El modelo está demasiado ocupado ahora mismo. Inténtalo de nuevo en unos segundos.'], 429);
+            }
+
             if ($statusCode !== 200) {
                 $errMsg = $result['error']['message'] ?? $body;
                 return $this->json(['error' => "OpenRouter ({$statusCode}): {$errMsg}"], 502);
