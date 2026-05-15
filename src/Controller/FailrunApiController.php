@@ -17,6 +17,8 @@ use App\Entity\UserRate;
 use App\Entity\Games;
 use App\Entity\Clips;
 use OpenApi\Attributes as OA;
+use App\Repository\UserRepository;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 
 final class FailrunApiController extends AbstractController
 {
@@ -149,16 +151,25 @@ final class FailrunApiController extends AbstractController
             new OA\Response(response: 401, description: 'Unauthorized'),
         ]
     )]
-    #[Route('/failrun/api/get-user-info', name: 'app_failrun_api_get_user_info', methods: ['GET'])]
-    public function getUserInfo(Security $security): JsonResponse
-    {     
-        return new JsonResponse([
-            'auth_header' => $request->headers->get('Authorization'),
-            'token_extracted' => $extractor->extract($request),
-        ]);
-        /*$user = $security->getUser(); //Fetch user info from token
-
-        // Return user info in the response.
+    #[Route('/failrun/api/get-user-info', methods: ['GET'])]
+    public function getUserInfo(Request $request, JWTEncoderInterface $jwtEncoder, UserRepository $userRepository): JsonResponse
+    {
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return new JsonResponse(['status' => 'error', 'message' => 'No token'], 401);
+        }
+        
+        try {
+            $payload = $jwtEncoder->decode(substr($authHeader, 7));
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Invalid token'], 401);
+        }
+        
+        $user = $userRepository->findOneBy(['username' => $payload['username']]);
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
+        }
+    
         return new JsonResponse([
             'status' => 'success',
             'data' => [
@@ -168,7 +179,7 @@ final class FailrunApiController extends AbstractController
                 'register_date' => $user->getRegisterDate()->format('Y-m-d H:i:s'),
                 'profilePic' => $user->getProfilePic(),
             ]
-        ], 200);*/
+        ]);
     }
 
     #[OA\Post(
