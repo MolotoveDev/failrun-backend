@@ -23,8 +23,8 @@ security:
             lazy: true
             provider: app_user_provider
             stateless: true
+            jwt: ~
             custom_authenticators:
-                - App\Security\JwtAuthenticator
                 - App\Security\ApiKeyAuthenticator
 
     access_control:
@@ -45,4 +45,4 @@ security:
         - { path: ^/failrun/api/get-stats, roles: ROLE_API }
         - { path: ^/failrun/api/get-recent-clips, roles: ROLE_API }
         - { path: ^/api/doc, roles: PUBLIC_ACCESS }
-        - { path: ^/failrun/api, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/failrun/api, roles: PUBLIC_ACCESS }
