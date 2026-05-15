@@ -466,7 +466,7 @@ final class FailrunAdminPanelController extends AbstractController
             return $this->json(['error' => 'Acceso denegado'], 403);
         }
 
-        $apiKey = $_ENV['OPENROUTER_API_KEY'] ?? '';
+        $apiKey = getenv('OPENROUTER_API_KEY') ?: ($_ENV['OPENROUTER_API_KEY'] ?? ($_SERVER['OPENROUTER_API_KEY'] ?? ''));
         if ($apiKey === '') {
             return $this->json(['error' => 'OPENROUTER_API_KEY no configurada en el servidor.'], 503);
         }
