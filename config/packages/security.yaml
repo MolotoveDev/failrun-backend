@@ -23,8 +23,8 @@ security:
             lazy: true
             provider: app_user_provider
             stateless: true
-            jwt: ~
             custom_authenticators:
+                - App\Security\JwtAuthenticator
                 - App\Security\ApiKeyAuthenticator
 
     access_control:
