@@ -148,6 +148,24 @@
 
         .field-value.multiline { align-items: flex-start; min-height: 80px; line-height: 1.5; }
         .field-value.url { font-size: 0.8rem; word-break: break-all; color: rgba(255,255,255,0.7); }
+        .field-value.url a { color: var(--red); text-decoration: none; }
+        .field-value.url a:hover { text-decoration: underline; }
+
+        .clip-preview-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            background: var(--surface2);
+        }
+        .clip-preview-wrapper iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
         .field-empty { color: var(--text-muted); font-style: italic; }
 
         .badge {
@@ -270,7 +288,44 @@
                     {% if record.clipDescription %}{{ record.clipDescription }}{% else %}<span class="field-empty">Sin descripción</span>{% endif %}
                 </div>
             </div>
+            <div class="field-group field-full">
+                <span class="field-label">Link del clip</span>
+                <div class="field-value url">
+                    {% if record.clipLink %}
+                        <a href="{{ record.clipLink }}" target="_blank" rel="noopener" data-clip-url="{{ record.clipLink }}">{{ record.clipLink }}</a>
+                    {% else %}
+                        <span class="field-empty">Sin link</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="field-group field-full" id="yt-preview" style="display:none;">
+                <span class="field-label">Vista previa</span>
+                <div class="clip-preview-wrapper">
+                    <iframe id="yt-iframe" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
         </div>
+        <script>
+        (function () {
+            const link = document.querySelector('[data-clip-url]');
+            if (!link) return;
+            const url = link.getAttribute('data-clip-url');
+            const patterns = [
+                /[?&]v=([^&#\s]+)/,
+                /youtu\.be\/([^?#\s]+)/,
+                /youtube\.com\/embed\/([^?#\s]+)/,
+                /youtube\.com\/shorts\/([^?#\s]+)/,
+            ];
+            for (const re of patterns) {
+                const m = url.match(re);
+                if (m) {
+                    document.getElementById('yt-iframe').src = 'https://www.youtube.com/embed/' + m[1];
+                    document.getElementById('yt-preview').style.display = '';
+                    break;
+                }
+            }
+        })();
+        </script>
 
         {# ── GAMES ── #}
         {% elseif entity == 'games' %}
