@@ -45,10 +45,10 @@ security:
 
         # Endpoints que requieren API Key (X-API-KEY header)
         - { path: ^/failrun/api/key-test, roles: ROLE_API }
-        - { path: ^/failrun/api/get-random-clips, roles: ROLE_API }
-        - { path: ^/failrun/api/get-top-rated-clips, roles: ROLE_API }
-        - { path: ^/failrun/api/get-random-clip, roles: ROLE_API }
-        - { path: ^/failrun/api/get-top-rated-clip, roles: ROLE_API }
+        - { path: ^/failrun/api/get-random-clips, roles: PUBLIC_ACCESS }
+        - { path: ^/failrun/api/get-top-rated-clips, roles: PUBLIC_ACCESS }
+        - { path: ^/failrun/api/get-random-clip, roles: ROLE_API } # API KEY
+        - { path: ^/failrun/api/get-top-rated-clip, roles: ROLE_API } # API KEY
         - { path: ^/failrun/api/get-stats, roles: ROLE_API }
         - { path: ^/failrun/api/get-recent-clips, roles: ROLE_API }
 
