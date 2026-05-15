@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\ApiKey;
 
 /**
@@ -452,6 +453,62 @@ final class FailrunAdminPanelController extends AbstractController
 
         } catch (\Exception $e) {
             return $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Proxy hacia OpenRouter — mantiene la API key fuera del frontend.
+     */
+    #[Route('/failrun/admin/chatbot', name: 'app_failrun_admin_chatbot', methods: ['POST'])]
+    public function chatbot(Request $request, HttpClientInterface $httpClient): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_MODERATOR')) {
+            return $this->json(['error' => 'Acceso denegado'], 403);
+        }
+
+        $apiKey = $_ENV['OPENROUTER_API_KEY'] ?? '';
+        if ($apiKey === '') {
+            return $this->json(['error' => 'OPENROUTER_API_KEY no configurada en el servidor.'], 503);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $messages = $data['messages'] ?? [];
+
+        if (empty($messages)) {
+            return $this->json(['error' => 'No se enviaron mensajes.'], 400);
+        }
+
+        $systemPrompt = [
+            'role' => 'system',
+            'content' => 'Eres un asistente de administración para Failrun, una plataforma de gaming clips. '
+                . 'Ayudas a los administradores con gestión de usuarios, clips, juegos, moderación y cualquier duda técnica. '
+                . 'Responde siempre en el idioma del usuario. Sé conciso y útil.',
+        ];
+
+        array_unshift($messages, $systemPrompt);
+
+        try {
+            $response = $httpClient->request('POST', 'https://openrouter.ai/api/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                    'HTTP-Referer'  => 'https://failrun.com',
+                    'X-Title'       => 'Failrun Admin Panel',
+                ],
+                'json' => [
+                    'model'    => 'meta-llama/llama-3.1-8b-instruct:free',
+                    'messages' => $messages,
+                ],
+                'timeout' => 30,
+            ]);
+
+            $result = $response->toArray();
+            $reply  = $result['choices'][0]['message']['content'] ?? 'Sin respuesta del modelo.';
+
+            return $this->json(['reply' => $reply]);
+
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Error al contactar OpenRouter: ' . $e->getMessage()], 502);
         }
     }
 
