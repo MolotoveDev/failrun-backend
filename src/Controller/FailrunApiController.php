@@ -389,7 +389,7 @@ final class FailrunApiController extends AbstractController
                 (SELECT AVG(rate) FROM user_rate WHERE clip_id_id = c.id) AS mediaTotal
             FROM clips c
             LEFT JOIN user_rate ur ON c.id = ur.clip_id_id
-            LEFT JOIN user u ON ur.user_id_id = u.id
+            LEFT JOIN user u ON c.user_id_id = u.id
             WHERE c.id = :clipId
             ORDER BY ur.rate DESC;";
 
