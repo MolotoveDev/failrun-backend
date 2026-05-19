@@ -18,12 +18,14 @@ Gestiona els clips, usuaris, valoracions, peticions i el panel d'administració.
 
 L'API segueix el patró MVC amb estructura estàndard de Symfony:
 
-```src/
+```
+src/
 ├── Controller/    — Controladors API i panel admin
 ├── Entity/        — Entitats Doctrine
 ├── Repository/    — Repositoris per a consultes BBDD
 ├── Security/      — Autenticadors JWT i API Key
 └── Form/          — Formularis del panel admin
+```
 
 ## Sistemes d'autenticació
 
@@ -35,7 +37,11 @@ L'API té 3 sistemes d'autenticació segons el cas d'ús:
 
 ## Documentació de l'API
 
-Documentació pública i interactiva amb Swagger:GET /api/doc
+Documentació pública i interactiva amb Swagger:
+
+```
+GET /api/doc
+```
 
 ## Requisits previs
 
@@ -46,15 +52,27 @@ Documentació pública i interactiva amb Swagger:GET /api/doc
 
 ## Instal·lació local
 
-```bash1. Clonar el repositori
+```bash
+# 1. Clonar el repositori
 git clone <url-del-repo>
-cd failrun-backend2. Instal·lar dependències
-composer install3. Crear .env.local amb les variables d'entorn
-cp .env .env.local4. Generar claus JWT
-php bin/console lexik:jwt:generate-keypair5. Crear la base de dades i executar migracions
+cd failrun-backend
+
+# 2. Instal·lar dependències
+composer install
+
+# 3. Crear .env.local amb les variables d'entorn
+cp .env .env.local
+
+# 4. Generar claus JWT
+php bin/console lexik:jwt:generate-keypair
+
+# 5. Crear la base de dades i executar migracions
 php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate6. Arrencar el servidor
+php bin/console doctrine:migrations:migrate
+
+# 6. Arrencar el servidor
 symfony server:start
+```
 
 ## Variables d'entorn
 
