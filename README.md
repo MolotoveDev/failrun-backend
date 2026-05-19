@@ -91,6 +91,7 @@ En producció, les variables s'injecten des d'AWS Secrets Manager.
 ## Estructura de branques
 
 - `main` — versió de producció
+- `develop` — branca d'integració del desenvolupament
 - `feature/*` — desenvolupament de noves funcionalitats
 
 ## Desplegament
@@ -117,3 +118,4 @@ L'aplicació corre a AWS ECS darrere d'un Application Load Balancer.
 
 - Àlex Carrasco
 - Houssam Essarhiar
+
