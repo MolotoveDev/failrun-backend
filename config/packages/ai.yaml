@@ -1,0 +1,12 @@
+ai:
+    platform:
+        generic:
+            llama:
+                base_url: '%env(AI_BASE_URL)%'
+                api_key: '%env(AI_API_KEY)%'
+                model_catalog: 'Symfony\AI\Platform\Bridge\Generic\FallbackModelCatalog'
+
+    agent:
+        default:
+            platform: 'ai.platform.generic.llama'
+            model: '%env(AI_MODEL)%'

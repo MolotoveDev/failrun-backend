@@ -1,6 +1,16 @@
 doctrine:
     dbal:
-        url: '%env(resolve:DATABASE_URL)%'
+        default_connection: default
+        connections:
+            default:
+                url: '%env(resolve:DATABASE_URL)%'
+                server_version: '8.0'
+                charset: utf8mb4
+            ai_readonly:
+                url: '%env(resolve:DATABASE_AI_READONLY_URL)%'
+                driver: pdo_mysql
+                server_version: '8.0'
+                charset: utf8mb4
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -19,10 +29,14 @@ doctrine:
                 alias: App
         controller_resolver:
             auto_mapping: false
+
 when@test:
     doctrine:
         dbal:
-            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            connections:
+                default:
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
 when@prod:
     doctrine:
         orm:

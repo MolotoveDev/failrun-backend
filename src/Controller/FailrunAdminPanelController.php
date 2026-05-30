@@ -18,8 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Entity\ApiKey;
+use App\Service\AdminChatService;
 
 /**
  * Controlador del panel administrativo de Failrun
@@ -456,71 +456,25 @@ final class FailrunAdminPanelController extends AbstractController
         }
     }
 
-    /**
-     * Proxy hacia OpenRouter — mantiene la API key fuera del frontend.
-     */
     #[Route('/failrun/admin/chatbot', name: 'app_failrun_admin_chatbot', methods: ['POST'])]
-    public function chatbot(Request $request, HttpClientInterface $httpClient): JsonResponse
+    public function chatbot(Request $request, AdminChatService $chatService): JsonResponse
     {
         if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_MODERATOR')) {
             return $this->json(['error' => 'Acceso denegado'], 403);
         }
 
-        $apiKey = getenv('OPENROUTER_API_KEY') ?: ($_ENV['OPENROUTER_API_KEY'] ?? ($_SERVER['OPENROUTER_API_KEY'] ?? ''));
-        if ($apiKey === '') {
-            return $this->json(['error' => 'OPENROUTER_API_KEY no configurada en el servidor.'], 503);
-        }
-
-        $data = json_decode($request->getContent(), true);
+        $data     = json_decode($request->getContent(), true);
         $messages = $data['messages'] ?? [];
 
         if (empty($messages)) {
             return $this->json(['error' => 'No se enviaron mensajes.'], 400);
         }
 
-        $systemPrompt = [
-            'role' => 'system',
-            'content' => 'Eres un asistente de administración para Failrun, una plataforma de gaming clips. '
-                . 'Ayudas a los administradores con gestión de usuarios, clips, juegos, moderación y cualquier duda técnica. '
-                . 'Responde siempre en el idioma del usuario. Sé conciso y útil.',
-        ];
-
-        array_unshift($messages, $systemPrompt);
-
         try {
-            $response = $httpClient->request('POST', 'https://openrouter.ai/api/v1/chat/completions', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'Content-Type'  => 'application/json',
-                    'HTTP-Referer'  => 'https://failrun.com',
-                    'X-Title'       => 'Failrun Admin Panel',
-                ],
-                'json' => [
-                    'model'    => 'google/gemma-4-31b-it:free',
-                    'messages' => $messages,
-                ],
-                'timeout' => 30,
-            ]);
-
-            $statusCode = $response->getStatusCode();
-            $body       = $response->getContent(false); // false = no lanza en 4xx/5xx
-            $result     = json_decode($body, true);
-
-            if ($statusCode === 429) {
-                return $this->json(['error' => 'El modelo está demasiado ocupado ahora mismo. Inténtalo de nuevo en unos segundos.'], 429);
-            }
-
-            if ($statusCode !== 200) {
-                $errMsg = $result['error']['message'] ?? $body;
-                return $this->json(['error' => "OpenRouter ({$statusCode}): {$errMsg}"], 502);
-            }
-
-            $reply = $result['choices'][0]['message']['content'] ?? 'Sin respuesta del modelo.';
-
+            $reply = $chatService->chat($messages);
             return $this->json(['reply' => $reply]);
-
         } catch (\Exception $e) {
-            return $this->json(['error' => 'Error al contactar OpenRouter: ' . $e->getMessage()], 502);
+            return $this->json(['error' => 'Error al contactar el modelo: ' . $e->getMessage()], 502);
         }
     }
 
